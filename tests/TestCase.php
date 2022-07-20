@@ -33,6 +33,5 @@ abstract class TestCase extends Orchestra
 
         $migration = include __DIR__.'/../database/migrations/create_odk_link_table.php.stub';
         $migration->up();
-
     }
 }
