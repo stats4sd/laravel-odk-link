@@ -3,6 +3,7 @@
 namespace Stats4sd\OdkLink\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Schema;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Stats4sd\OdkLink\OdkLinkServiceProvider;
 
@@ -17,20 +18,21 @@ abstract class TestCase extends Orchestra
         );
     }
 
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             OdkLinkServiceProvider::class,
         ];
     }
 
-    public function getEnvironmentSetUp($app)
+    public function getEnvironmentSetUp($app): void
     {
         config()->set('database.default', 'testing');
 
-        /*
-        $migration = include __DIR__.'/../database/migrations/create_laravel-odk-link_table.php.stub';
+        Schema::dropAllTables();
+
+        $migration = include __DIR__.'/../database/migrations/create_odk_link_table.php.stub';
         $migration->up();
-        */
+
     }
 }
