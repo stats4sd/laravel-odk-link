@@ -1,17 +1,17 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "stats4sd/laravel-odk-link",
+    "description": "A version 2.0 update to the Kobo Link package, intended to be easier to setup and more flexible by allowing the user to choose between multiple ODK Aggregate services.",
     "keywords": [
-        ":vendor_name",
+        "stats4sd",
         "laravel",
-        ":package_slug"
+        "laravel-odk-link"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/stats4sd/laravel-odk-link",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "David Mills",
+            "email": "d.e.mills@stats4sd.org",
             "role": "Developer"
         }
     ],
@@ -21,27 +21,25 @@
         "illuminate/contracts": "^9.0"
     },
     "require-dev": {
+        "roave/security-advisories": "dev-latest",
         "laravel/pint": "^1.0",
         "nunomaduro/collision": "^6.0",
         "nunomaduro/larastan": "^2.0.1",
         "orchestra/testbench": "^7.0",
-        "pestphp/pest": "^1.21",
-        "pestphp/pest-plugin-laravel": "^1.1",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
-        "phpunit/phpunit": "^9.5",
-        "spatie/laravel-ray": "^1.26"
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories"
+            "Stats4sd\\OdkLink\\": "src",
+            "Stats4sd\\OdkLink\\Database\\Factories\\": "database/factories"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests"
+            "Stats4sd\\OdkLink\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -51,15 +49,19 @@
         "format": "vendor/bin/pint"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Stats4sd\\OdkLink\\OdkLinkServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "OdkLink": "Stats4sd\\OdkLink\\Facades\\OdkLink"
             }
         }
     },

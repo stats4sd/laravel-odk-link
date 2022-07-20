@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Stats4sd\OdkLink\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class OdkLinkCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'laravel-odk-link';
 
     public $description = 'My command';
 
