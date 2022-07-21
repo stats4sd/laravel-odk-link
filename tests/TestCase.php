@@ -14,7 +14,7 @@ abstract class TestCase extends Orchestra
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Stats4sd\\OdkLink\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => '\\Stats4sd\\OdkLink\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
     }
 
@@ -31,7 +31,17 @@ abstract class TestCase extends Orchestra
 
         Schema::dropAllTables();
 
-        $migration = include __DIR__.'/../database/migrations/create_odk_link_table.php.stub';
-        $migration->up();
+        $migrations = [
+            include __DIR__ . '/../database/migrations/create_xlsform_templates_table.php.stub',
+            include __DIR__ . '/../database/migrations/create_submissions_table.php.stub',
+            include __DIR__ . '/../database/migrations/create_xlsform_versions_table.php.stub',
+            include __DIR__ . '/../database/migrations/create_xlsforms_table.php.stub',
+            include __DIR__ . '/migrations/create_form_owners_table.php.stub',
+        ];
+
+        foreach ($migrations as $migration) {
+            $migration->up();
+        }
+
     }
 }

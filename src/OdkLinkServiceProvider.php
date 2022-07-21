@@ -19,7 +19,9 @@ class OdkLinkServiceProvider extends PackageServiceProvider
             ->name('laravel-odk-link')
             ->hasConfigFile()
             ->hasViews()
-            ->hasMigration('create_laravel-odk-link_table')
+            ->hasMigration('create_xlsform_templates_table.php.stub')
+            ->hasMigration('create_xlsforms_table.php.stub')
+            ->hasMigration('create_submissions_table.php.stub')
             ->hasCommand(OdkLinkCommand::class);
     }
 }

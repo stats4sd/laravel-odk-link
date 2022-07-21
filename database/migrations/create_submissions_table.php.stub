@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        /**
+         * Table to store all ODK raw submissions that get pulled from KoBoToolbox
+         */
+        Schema::create('submissions', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->primary();
+            $table->foreignId('xlsform_version_id')->constrained('xlsform_versions');
+            $table->string('uuid');
+            $table->timestamp('submitted_at');
+            $table->string('submitted_by')->nullable();
+            $table->json('content');
+            $table->json('errors')->nullable();
+            $table->boolean('processed')->default(0);
+            $table->json('entries')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('submissions');
+    }
+};
