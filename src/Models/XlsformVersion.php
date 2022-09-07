@@ -2,6 +2,7 @@
 
 namespace Stats4sd\OdkLink\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,14 +17,23 @@ class XlsformVersion extends Model
     protected $guarded = [];
 
 
-    public function getTitleAttribute(): string
+    // If no title is given, add a default title by combining the owner name and template title.
+    public function title(): Attribute
     {
-        return $this->team ? $this->team->name.' - '.$this->xlsform->title : '';
+        return new Attribute(
+            get: function () {
+                return $this->team ? $this->team->name.' - '.$this->xlsform->title : '';
+            }
+        );
     }
 
-    public function getRecordsAttribute(): int
+    public function records(): Attribute
     {
-        return $this->submissions->count();
+        return new Attribute(
+            get: function() {
+                return $this->submissions->count();
+            }
+        );
     }
 
     /*

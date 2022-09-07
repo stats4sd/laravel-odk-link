@@ -4,12 +4,15 @@ namespace Stats4sd\OdkLink;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use Stats4sd\OdkLink\Commands\OdkLinkCommand;
+use Stats4sd\OdkLink\Commands\AddCrudPanelLinksToSidebar;
+use Stats4sd\OdkLink\Commands\AddDemoEntries;
+use Stats4sd\OdkLink\Services\OdkLinkService;
 
 class OdkLinkServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
+
         /*
          * This class is a Package Service Provider
          *
@@ -19,9 +22,25 @@ class OdkLinkServiceProvider extends PackageServiceProvider
             ->name('laravel-odk-link')
             ->hasConfigFile()
             ->hasViews()
-            ->hasMigration('create_xlsform_templates_table.php.stub')
-            ->hasMigration('create_xlsforms_table.php.stub')
-            ->hasMigration('create_submissions_table.php.stub')
-            ->hasCommand(OdkLinkCommand::class);
+            ->hasMigrations([
+                '1_create_xlsform_templates_table',
+                '2_create_xlsforms_table',
+                '3_create_xlsform_versions_table',
+                '4_create_submissions_table',
+                '5_create_odk_projects_table',
+            ])
+            ->hasRoute('/odk-link')
+            ->hasCommands([
+                AddCrudPanelLinksToSidebar::class,
+                AddDemoEntries::class,
+            ]);
+
+    }
+
+    public function registeringPackage(): void
+    {
+        $this->app->singleton(OdkLinkService::class, function ($app) {
+            return new OdkLinkService(config('odk-link.odk.base_endpoint'));
+        });
     }
 }

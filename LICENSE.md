@@ -1,4 +1,4 @@
-The MIT License (MIT)
+The MIT Licence (MIT)
 
 Copyright (c) stats4sd <d.e.mills@stats4sd.org>
 

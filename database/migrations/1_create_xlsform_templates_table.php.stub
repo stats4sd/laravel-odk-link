@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->json('csv_lookups')->nullable()->comment('information to enable mysql tables or views to be converted to csv files and added as additional media attachments to the ODK form');
             $table->string('available')->nullable()->comment('Available to all users? If false, the form is only available to testers or admins.');
             $table->foreignId('owner_id')->nullable();
+            $table->string('owner_type')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

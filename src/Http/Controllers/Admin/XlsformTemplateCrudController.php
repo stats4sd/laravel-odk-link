@@ -16,7 +16,7 @@ use Stats4sd\OdkLink\Models\XlsformTemplate;
 
 /**
  * Class XlsformCrudController
- * @package \Stats4SD\KoboLink\Http\Controllers\Admin
+ * @package \Stats4SD\OdkLink\Http\Controllers\Admin
  * @property-read CrudPanel $crud
  */
 class XlsformTemplateCrudController extends CrudController
@@ -30,8 +30,8 @@ class XlsformTemplateCrudController extends CrudController
     public function setup(): void
     {
         CRUD::setModel(XlsformTemplate::class);
-        CRUD::setRoute(config('backpack.base.route_prefix') . '/xlsform');
-        CRUD::setEntityNameStrings('xlsform', 'xlsforms');
+        CRUD::setRoute(config('backpack.base.route_prefix') . '/xlsform-template');
+        CRUD::setEntityNameStrings('xlsform template', 'xlsform templates');
     }
 
     /**
@@ -68,13 +68,26 @@ class XlsformTemplateCrudController extends CrudController
      */
     protected function setupCreateOperation(): void
     {
-        CRUD::setValidation(XlsformRequest::class);
+        CRUD::field('title')
+        ->validationRules('required|max:255');
 
-        CRUD::field('title');
-        CRUD::field('xlsfile')->type('upload')->upload(true);
-        CRUD::field('description')->type('textarea');
-        CRUD::field('media')->type('upload_multiple')->label('Add any static files that should be pushed to KoboToolBox as media attachments for this form')->upload(true);
-        CRUD::field('csv_lookups')->type('repeatable')->fields([
+        CRUD::field('xlsfile')
+            ->type('upload')
+            ->upload(true)
+            ->validationRules('required');
+
+        CRUD::field('description')
+            ->type('textarea')
+            ->validationRules('nullable');
+
+        CRUD::field('media')
+            ->type('upload_multiple')
+            ->label('Add any static files that should be pushed to KoboToolBox as media attachments for this form')
+            ->upload(true)
+            ->validationRules('nullable');
+
+
+        CRUD::field('csv_lookups')->type('repeatable')->subfields([
             [
                 'name' => 'mysql_name',
                 'label' => 'MySQL Table Name',
@@ -84,9 +97,10 @@ class XlsformTemplateCrudController extends CrudController
                 'label' => 'CSV File Name',
             ],
             [
-                'name' => 'per_team',
+                'name' => 'per_owner',
                 'type' => 'checkbox',
-                'label' => 'Should this csv file be filtered by "team_id"?',
+                'label' => 'Does this csv file show owner-specific data?',
+                'hint' => '(Do different users or teams have different data for this csv lookup file?)',
             ],
             [
                 'name' => 'external_file',
@@ -94,19 +108,23 @@ class XlsformTemplateCrudController extends CrudController
                 'label' => 'Is this file to be used with either a select_one_from_external or select_multiple_from_external question type?',
                 'hint' => 'If you are not sure, leave this unchecked!',
             ],
-        ])->label('<h4>Add Lookups from the Database</h4>
-        <br/><div class="bd-callout bd-callout-info font-weight-normal">
-        You should add the name of the MySQL Table or View, and the required name of the resulting CSV file. Every time you deploy this form, the platform will create a new version of the csv file using the data from the MySQL table or view you specify. This file will be uploaded to KoboToolBox as a form media attachment.
-        <br/><br/>
-        For example, if the form requires a csv lookup file called "households.csv", and the data is available in a view called "households_csv", then you should an entry like this:
+        ])->label('
+        <h4>Add Lookups from the Database</h4><br/>
+        <div class="bd-callout bd-callout-info font-weight-normal">
+            You should add the name of the MySQL Table or View, and the required name of the resulting CSV file. Every time you deploy this form, the platform will create a new version of the csv file using the data from the MySQL table or view you specify. This file will be uploaded to KoboToolBox as a form media attachment.
+            <br/><br/>
+            For example, if the form requires a csv lookup file called "households.csv", and the data is available in a view called "households_csv", then you should an entry like this:
             <ul>
                 <li>MySQL Table Name = households_csv</li>
                 <li>CSV File Name = households</li>
             </ul>
-        CSV files can optionally be filtered to only show team-specific records. Use this for data that each team can customise themselves, or for data that should be filtered to a team\'s local context. For this to work, the MySQL table or view <b>must</b> have a "team_id" field to filter by.
-        </div>')->entity_singular('CSV Lookup reference');
-        CRUD::field('available')->label('If this form should be available to all teams, tick this box')->type('checkbox');
-        CRUD::field('privateTeam')->label('If this form should be available to a <b>single</b> team, select the team here.')->type('relationship')->attribute('name');
+            CSV files can optionally be filtered to only show team-specific records. Use this for data that each team can customise themselves, or for data that should be filtered to a team\'s local context. For this to work, the MySQL table or view <b>must</b> have a "team_id" field to filter by.
+        </div>
+        ')->entity_singular('CSV Lookup reference');
+
+        CRUD::field('available')
+            ->label('If this form should be available to all users, tick this box')
+            ->type('checkbox');
     }
 
     /**
@@ -118,6 +136,14 @@ class XlsformTemplateCrudController extends CrudController
     protected function setupUpdateOperation(): void
     {
         $this->setupCreateOperation();
+
+        CRUD::removeField('xlsfile');
+
+        CRUD::field('xlsfile')
+            ->after('title')
+            ->type('upload')
+            ->upload(true)
+        ->validationRules('nullable');
     }
 
     public function setupShowOperation(): void

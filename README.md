@@ -1,7 +1,7 @@
 
 [<img src="https://github-ads.s3.eu-central-1.amazonaws.com/support-ukraine.svg?t=1" />](https://supportukrainenow.org)
 
-# A version 2.0 update to the Kobo Link package, intended to be easier to setup and more flexible by allowing the user to choose between multiple ODK Aggregate services.
+# A version 2.0 update to the Kobo Link package, intended to be easier to set up and more flexible by allowing the user to choose between multiple ODK Aggregate services.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/stats4sd/laravel-odk-link.svg?style=flat-square)](https://packagist.org/packages/stats4sd/laravel-odk-link)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/stats4sd/laravel-odk-link/run-tests?label=tests)](https://github.com/stats4sd/laravel-odk-link/actions?query=workflow%3Arun-tests+branch%3Amain)
@@ -29,14 +29,14 @@ composer require stats4sd/laravel-odk-link
 You can publish and run the migrations with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-odk-link-migrations"
+php artisan vendor:publish --tag="odk-link-migrations"
 php artisan migrate
 ```
 
 You can publish the config file with:
 
 ```bash
-php artisan vendor:publish --tag="laravel-odk-link-config"
+php artisan vendor:publish --tag="odk-link-config"
 ```
 
 This is the contents of the published config file:
@@ -49,7 +49,7 @@ return [
 Optionally, you can publish the views using
 
 ```bash
-php artisan vendor:publish --tag="laravel-odk-link-views"
+php artisan vendor:publish --tag="odk-link-views"
 ```
 
 ## Usage
@@ -65,23 +65,22 @@ echo $odkLink->echoPhrase('Hello, Stats4sd!');
 composer test
 ```
 
-## Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
 
 ## Contributing
+#TODO
 
-Please see [CONTRIBUTING](https://github.com/dave-mills/.github/blob/main/CONTRIBUTING.md) for details.
 
 ## Security Vulnerabilities
+#TODO
 
-Please review [our security policy](../../security/policy) on how to report security vulnerabilities.
 
 ## Credits
 
 - [David Mills](https://github.com/dave-mills)
+
+#TODO
 - [All Contributors](../../contributors)
 
 ## License
-
-The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+#TODO
+The MIT Licence (MIT). Please see [Licence File](LICENSE.md) for more information.

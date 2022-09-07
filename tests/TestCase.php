@@ -2,13 +2,21 @@
 
 namespace Stats4sd\OdkLink\Tests;
 
+use App\Models\User;
+use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
+use Backpack\CRUD\BackpackServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithViews;
 use Illuminate\Support\Facades\Schema;
+use Orchestra\Testbench\Concerns\CreatesApplication;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Stats4sd\OdkLink\OdkLinkServiceProvider;
 
 abstract class TestCase extends Orchestra
 {
+
+    use CreatesApplication;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -22,6 +30,7 @@ abstract class TestCase extends Orchestra
     {
         return [
             OdkLinkServiceProvider::class,
+            //BackpackServiceProvider::class,
         ];
     }
 
@@ -32,10 +41,10 @@ abstract class TestCase extends Orchestra
         Schema::dropAllTables();
 
         $migrations = [
-            include __DIR__ . '/../database/migrations/create_xlsform_templates_table.php.stub',
-            include __DIR__ . '/../database/migrations/create_submissions_table.php.stub',
-            include __DIR__ . '/../database/migrations/create_xlsform_versions_table.php.stub',
-            include __DIR__ . '/../database/migrations/create_xlsforms_table.php.stub',
+            include __DIR__ . '/../database/migrations/1_create_xlsform_templates_table.php.stub',
+            include __DIR__ . '/../database/migrations/4_create_submissions_table.php.stub',
+            include __DIR__ . '/../database/migrations/3_create_xlsform_versions_table.php.stub',
+            include __DIR__ . '/../database/migrations/2_create_xlsforms_table.php.stub',
             include __DIR__ . '/migrations/create_form_owners_table.php.stub',
         ];
 
@@ -44,4 +53,6 @@ abstract class TestCase extends Orchestra
         }
 
     }
+
+
 }

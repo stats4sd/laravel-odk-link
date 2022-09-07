@@ -18,9 +18,12 @@
     "require": {
         "php": "^8.0|^8.1",
         "backpack/crud": "^5.2",
-        "backpack/settings": "^3.0",
+        "backpack/pro": "^1.2",
+        "maatwebsite/excel": "^3.1.4",
         "spatie/laravel-package-tools": "^1.9.2",
-        "stats4sd/laravel-file-util": "dev-laravel-9-support"
+        "stats4sd/laravel-file-util": "dev-local-only",
+        "ext-zlib": "*",
+        "ext-fileinfo": "*"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
@@ -36,7 +39,8 @@
     "autoload": {
         "psr-4": {
             "Stats4sd\\OdkLink\\": "src",
-            "Stats4sd\\OdkLink\\Database\\Factories\\": "database/factories"
+            "Stats4sd\\OdkLink\\Database\\Factories\\": "database/factories",
+            "Stats4sd\\OdkLink\\Database\\Seeders\\": "database/seeders"
         }
     },
     "autoload-dev": {
@@ -71,6 +75,10 @@
         {
             "type": "path",
             "url": "../laravel-file-util"
+        },
+        {
+            "type": "composer",
+            "url": "https://repo.backpackforlaravel.com/"
         }
     ],
     "minimum-stability": "dev",

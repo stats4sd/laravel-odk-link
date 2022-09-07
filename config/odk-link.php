@@ -8,7 +8,6 @@ return [
         /**
          * Tells the system which Aggregation system is in use. Possible values are:
          * - odk-central
-         * - kobotoolbox
          */
         'aggregator' => env('ODK_SERVICE', 'odk-central'),
 
@@ -22,7 +21,8 @@ return [
          *
          *
          */
-        'base_endpoint' => env('ODK_ENDPOINT', ''),
+        'url' => env('ODK_URL', ''),
+        'base_endpoint' => env('ODK_ENDPOINT', env('ODK_URL')."/v1"),
 
         /**
          * Username and password for the main platform account
@@ -36,7 +36,12 @@ return [
     ],
 
     'storage' => [
-        'xlsforms' => config('filesystem.default'),
-        'media' => config('filesystem.default'),
+        'xlsforms' => config('filesystem.default', 'local'),
+        'media' => config('filesystem.default', 'local'),
+    ],
+
+    'roles' => [
+        // the role that a user must have in order to see *all* forms, and not just the ones owned by an entity linked to the user.
+        'xlsform-admin' => env('XLSFORM_ADMIN_ROLE', 'admin'),
     ],
 ];

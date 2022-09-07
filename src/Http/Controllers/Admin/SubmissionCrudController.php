@@ -158,7 +158,7 @@ class SubmissionCrudController extends CrudController
                 continue;
             }
 
-            CRUD::field('_title'.$key)->type('custom_html')->value("<h5>{$key}</h5>");
+            CRUD::field('_title'.$key)->type('custom_html')->value("<h5>$key</h5>");
             CRUD::field('_label'.$key)->type('submission_variable')->value((string) $key)->fake(true);
             CRUD::field($key)->type('submission_value')->value((string) $value)->fake(true);
             CRUD::field('_end'.$key)->type('custom_html')->value('<hr/>');
