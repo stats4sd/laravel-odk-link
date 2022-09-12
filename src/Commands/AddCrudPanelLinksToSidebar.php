@@ -17,12 +17,15 @@ class AddCrudPanelLinksToSidebar extends Command
 
         $xlsFormLinkHtml = '<li class="nav-item"><a class="nav-link" href="{{ backpack_url("xlsform") }}"><i class="la la-wpforms nav-icon"></i> Xlsforms</a></li>';
 
+        $odkProjectLinkHtml = '<li class="nav-item"><a class="nav-link" href="{{ backpack_url("odk-project") }}"><i class="la la-users nav-icon"></i> Xlsform Owners</a></li>';
+
 //        $xlsFormVersionLinkHtml = '<li class="nav-item"><a class="nav-link" href="{{ backpack_url("xlsform-version") }}"><i class="la la-forms nav-icon"></i> Xlsform Versions</a></li>';
 
         $submissionLinkHtml = '<li class="nav-item"><a class="nav-link" href="{{ backpack_url("submission") }}"><i class="la la-clipboard-check nav-icon"></i> Submissions</a></li>';
 
         Artisan::call("backpack:add-sidebar-content '$xlsTemplateLinkHtml'");
         Artisan::call("backpack:add-sidebar-content '$xlsFormLinkHtml'");
+        Artisan::call("backpack:add-sidebar-content '$odkProjectLinkHtml'");
 //        Artisan::call("backpack:add-sidebar-content '$xlsFormVersionLinkHtml'");
         Artisan::call("backpack:add-sidebar-content '$submissionLinkHtml'");
 

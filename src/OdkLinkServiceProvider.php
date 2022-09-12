@@ -28,6 +28,8 @@ class OdkLinkServiceProvider extends PackageServiceProvider
                 '3_create_xlsform_versions_table',
                 '4_create_submissions_table',
                 '5_create_odk_projects_table',
+                '6_create_app_users_table',
+                '7_create_app_user_assignments_table',
             ])
             ->hasRoute('/odk-link')
             ->hasCommands([

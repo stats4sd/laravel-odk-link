@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        /**
+         * Table to store all App Users created for projects
+         */
+        Schema::create('app_users', function (Blueprint $table) {
+            $table->unsignedBigInteger('id')->primary();
+            $table->foreignId('odk_project_id')->constrained('odk_projects');
+            $table->string('display_name');
+            $table->string('type');
+            $table->string('token');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('submissions');
+    }
+};

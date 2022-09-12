@@ -15,7 +15,11 @@ use Exception;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use Stats4sd\OdkLink\Models\OdkProject;
 use Stats4sd\OdkLink\Models\Xlsform;
 use Stats4sd\OdkLink\Services\OdkLinkService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -29,8 +33,6 @@ class XlsformCrudController extends CrudController
 {
     use ListOperation;
 
-    //use UpdateOperation;
-
     /**
      * @throws Exception
      */
@@ -39,6 +41,13 @@ class XlsformCrudController extends CrudController
         CRUD::setModel(Xlsform::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/xlsform');
         CRUD::setEntityNameStrings('XLS Form', 'XLS Forms');
+
+
+        // if the current user is an xlsform-admin (role defined in the config), then show all xlsforms. Otherwise, show only the ones that the user has access to:
+
+        if (Auth::check() && !Auth::user()?->hasRole(config('odk-link.roles.xlsform-admin'))) {
+            CRUD::addClause('owned');
+        }
     }
 
     /**
@@ -75,11 +84,20 @@ class XlsformCrudController extends CrudController
             },
         ]);
 
+        // TEMP
+        $qrCodeString = Auth::user()?->odkProject->appUsers->first()?->qr_code_string ?? '';
+
         Widget::add()
             ->type('card')
             ->content([
                 'header' => 'XLS Forms',
-                'body' => 'This page shows the full set of ODK Forms available to you as a user.'
+                'body' => '
+<div class="row">
+<div class="col-lg-6">
+    This page shows the full set of ODK Forms available to you as a user. <br/><br/>To access *all* live forms, use this QR code:
+</div>
+<div class="col-lg-6">'
+                    . Blade::render('{!!QrCode::size(300)->generate($qrCodeString) !!}', ['qrCodeString' => $qrCodeString]) . '</div></div>'
             ]);
 
     }
@@ -149,5 +167,56 @@ class XlsformCrudController extends CrudController
         return $xlsform;
     }
 
+    public function setupOdkProjectOperation(OdkProject $odkproject)
+    {
+        $this->crud->setOperation('list');
+        $this->setupListDefaults();
+        $this->setupListOperation();
 
+        $this->crud->query = $this->crud->query->where('owner_id', $odkproject->owner_id)
+            ->where('owner_type', $odkproject->owner_type);
+
+        $this->data['crud'] = $this->crud;
+        $this->data['title'] = $this->crud->getTitle() ?? mb_ucfirst($this->crud->entity_name_plural);
+
+        // load the view from /resources/views/vendor/backpack/crud/ if it exists, otherwise load the one in the package
+        return view($this->crud->getListView(), $this->data);
+    }
+
+    public function setupProjectRoutes($segment, $routeName, $controller)
+    {
+        Route::get($segment . '/projects/{project}', [
+            'as' => $routeName . '.project',
+            'uses' => $controller . '@project',
+            'operation' => 'project',
+        ]);
+    }
+
+    public function setupProjectDefaults()
+    {
+
+        $this->setupListDefaults();
+    }
+
+    public function project(OdkProject $project)
+    {
+        $this->crud->hasAccessOrFail('list');
+
+        $this->crud->setPageLengthMenu([10, 25, 50, 100, -1]);
+
+
+        $this->data['crud'] = $this->crud;
+
+        $this->data['title'] = $this->crud->getTitle() ?? mb_ucfirst($this->crud->entity_name_plural);
+
+        // load the view from /resources/views/vendor/backpack/crud/ if it exists, otherwise load the one in the package
+        return view($this->crud->getListView(), $this->data);
+    }
+
+    public function setupProjectOperation()
+    {
+        $this->setupListOperation();
+
+        $this->crud->query = $this->crud->query->where('owner_id', 29);
+    }
 }

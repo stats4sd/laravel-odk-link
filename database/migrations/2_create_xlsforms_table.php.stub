@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('owner_id');
             $table->string('owner_type');
+            $table->foreignId('odk_project_id')->nullable();
             $table->foreignId('xlsform_template_id')->constrained('xlsform_templates');
             $table->string('xlsfile')->nullable();
             $table->string('title')->nullable()->comment('If null, the system by default retrieves a title in the format $ownerName - $xlsformTemplateTitle');

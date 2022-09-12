@@ -5,6 +5,8 @@ namespace Stats4sd\OdkLink\Services;
 use _PHPStan_9a6ded56a\React\Http\Message\ResponseException;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +15,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Psr\SimpleCache\InvalidArgumentException;
 use Stats4sd\OdkLink\Exports\SqlViewExport;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
+use Stats4sd\OdkLink\Models\AppUser;
 use Stats4sd\OdkLink\Models\OdkProject;
 use Stats4sd\OdkLink\Models\Xlsform;
 use Stats4sd\OdkLink\Models\XlsformVersion;
@@ -50,27 +53,6 @@ class OdkLinkService
 
     }
 
-
-    /**
-     * Returns the Url that the user can use to view the form in the browser.
-     * @param Xlsform $xlsform
-     * @return string $url
-     */
-    public function getFormUrl(Xlsform $xlsform): string
-    {
-
-    }
-
-    /**
-     * Returns the API url of the specific form.
-     * @param Xlsform $xlsform
-     * @return string $url
-     */
-    public function getFormApiUrl(Xlsform $xlsform): string
-    {
-
-    }
-
     /**
      * Creates a new project in ODK Central
      * @param string $name
@@ -87,6 +69,28 @@ class OdkLinkService
             ])
             ->throw()
             ->json();
+    }
+
+    public function createProjectAppUser(OdkProject $odkProject): array
+    {
+        $token = $this->authenticate();
+
+
+
+        // create new user
+        $userResponse = Http::withToken($token)
+            ->post("{$this->endpoint}/projects/{$odkProject->id}/app-users", [
+                'displayName' => $odkProject->owner->name . $odkProject->appUserCount(),
+            ])
+            ->throw()
+            ->json();
+
+        // assign user to the project
+        return Http::withToken($token)
+            ->post("{$this->endpoint}/projects/{$odkProject->id}/assignments/manager/{$userResponse['id']}")
+            ->throw()
+            ->json();
+
     }
 
     /**
@@ -366,6 +370,27 @@ class OdkLinkService
         }
 
         return $filePath;
+    }
+
+    public function test()
+    {
+
+        $data =  Http::withToken($this->authenticate())
+            ->get("{$this->endpoint}/projects/24/app-users")
+            ->throw()
+            ->json();
+
+        AppUser::create(
+            [
+                'id' => $data[0]['id'],
+                'odk_project_id' => $data[0]['projectId'],
+                'type' => $data[0]['type'],
+                'display_name' => $data[0]['displayName'],
+                'token' => $data[0]['token'],
+            ]
+        );
+
+        return 'hi';
     }
 }
 

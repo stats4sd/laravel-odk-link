@@ -33,6 +33,11 @@ return [
          */
         'username' => env('ODK_USERNAME', ''),
         'password' => env('ODK_PASSWORD', ''),
+
+        // the password to be used for individual project accounts
+        // TODO: consider options for allowing users to set their own passwords (which we cannot keep in plain text, so we must ask the user for it every time).
+        // TODO: consider how to hash this - maybe each project has a unique seed that combines with the main ODK_PASSWORD to generate this.
+        'project-password' => env('ODK_PROJECT_PASSWORD', env('ODK_PASSWORD')),
     ],
 
     'storage' => [

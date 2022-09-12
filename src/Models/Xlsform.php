@@ -41,33 +41,40 @@ class Xlsform extends Model
     {
         parent::booted();
 
-        // when the model is created; copy the xlsfile from the template and update the title and id:
+        // when the model is created;
         static::saved(function ($xlsform) {
+
+            // copy the xlsfile from the template and update the title and id:
             if (!$xlsform->xlsfile) {
                 $xlsform->updateXlsfileFromTemplate();
             }
+
+            // if the odk_project is not set, set it based on the given owner:
+            $xlsform->odk_project_id = $xlsform->owner->odkProject->id;
+            $xlsform->saveQuietly();
         });
 
-        static::addGlobalScope('owned', function (Builder $builder) {
 
-            if (Auth::check()) {
-                $builder->where(function ($query) {
-                    $query->whereHas('owner', function (Builder $query) {
+    }
 
-                        // is the xlsform owned by the logged in user?
-                        if (is_a($query->getModel(), User::class)) {
+    public function scopeOwned($builder)
+    {
+        if (Auth::check()) {
+            $builder->where(function ($query) {
+                $query->whereHas('owner', function (Builder $query) {
+
+                    // is the xlsform owned by the logged in user?
+                    if (is_a($query->getModel(), User::class)) {
+                        $query->where('users.id', Auth::id());
+                    } else {
+                        // is the xlsform owned by a team/group other entity that the logged in user is linked to?
+                        $query->whereHas('users', function ($query) {
                             $query->where('users.id', Auth::id());
-                        } else {
-                            // is the xlsform owned by a team/group other entity that the logged in user is linked to?
-                            $query->whereHas('users', function ($query) {
-                                $query->where('users.id', Auth::id());
-                            });
-                        }
-                    });
+                        });
+                    }
                 });
-            }
-        });
-
+            });
+        }
     }
 
     // If no title is given, add a default title by combining the owner name and template title.

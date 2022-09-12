@@ -1,6 +1,7 @@
 <?php
 
 // Admin panels from the ODK Link Package:
+use Stats4sd\OdkLink\Http\Controllers\Admin\OdkProjectCrudController;
 use Stats4sd\OdkLink\Http\Controllers\Admin\SubmissionCrudController;
 use Stats4sd\OdkLink\Http\Controllers\Admin\XlsformCrudController;
 use Stats4sd\OdkLink\Http\Controllers\Admin\XlsformTemplateCrudController;
@@ -17,6 +18,8 @@ Route::group([
 
     Route::crud('xlsform-template', XlsformTemplateCrudController::class);
     Route::crud('xlsform', XlsformCrudController::class);
+    Route::crud('odk-project', OdkProjectCrudController::class);
+
 //    Route::crud('xlsform-version', XlsformVersionCrudController::class);
     Route::crud('submission', SubmissionCrudController::class);
 
@@ -36,9 +39,13 @@ Route::group([
 //
 //    Route::post('submission/{submission}/reprocess', [SubmissionCrudController::class, 'reprocessSubmission']);
 
-Route::get('testing/{xlsform}/upload-file', function(Xlsform $xlsform, OdkLinkService $odkLinkService){
-    $odkLinkService->uploadMediaFileAttachments($xlsform);
+Route::get('testing/{project}/gen-user', function(\Stats4sd\OdkLink\Models\OdkProject $project, OdkLinkService $odkLinkService){
+    $odkLinkService->createProjectUser($project);
 
+});
+
+Route::get('testing/app-users', function(OdkLinkService $odkLinkService) {
+    return $odkLinkService->test();
 });
 
 });
