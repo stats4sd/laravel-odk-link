@@ -87,19 +87,18 @@ class XlsformCrudController extends CrudController
         // TEMP
         $qrCodeString = Auth::user()?->odkProject->appUsers->first()?->qr_code_string ?? '';
 
+        $introText = "This page shows all Xlsforms that you have access to. Click the + symbol to show more options for a specific form.";
+
+        if (Auth::check() && !Auth::user()?->hasRole(config('odk-link.roles.xlsform-admin'))) {
+            $introText = "This page shows all xlsforms on the entire site, organised by owner. Click the + symbol to show more options for a specific form.";
+        }
+
         Widget::add()
             ->type('card')
             ->content([
                 'header' => 'XLS Forms',
-                'body' => '
-<div class="row">
-<div class="col-lg-6">
-    This page shows the full set of ODK Forms available to you as a user. <br/><br/>To access *all* live forms, use this QR code:
-</div>
-<div class="col-lg-6">'
-                    . Blade::render('{!!QrCode::size(300)->generate($qrCodeString) !!}', ['qrCodeString' => $qrCodeString]) . '</div></div>'
+                'body' => $introText,
             ]);
-
     }
 
     /**
