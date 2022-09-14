@@ -8,7 +8,7 @@
 
     <h2>{{ $entry->name }}</h2>
 
-    <livewire:owner-forms-table/>
+    <livewire:owner-forms-table theme="bootstrap-4" :odk-project="$entry"/>
 
 
     {{--    TODO: Include page for owners (teams/users etc) to manage forms + enumerator accounts     --}}

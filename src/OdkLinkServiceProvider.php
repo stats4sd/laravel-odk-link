@@ -3,6 +3,7 @@
 namespace Stats4sd\OdkLink;
 
 use Livewire\Livewire;
+use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Stats4sd\OdkLink\Commands\AddCrudPanelLinksToSidebar;
@@ -51,5 +52,6 @@ class OdkLinkServiceProvider extends PackageServiceProvider
     public function bootingPackage(): void
     {
         Livewire::component('owner-forms-table', OwnerFormsTable::class);
+
     }
 }
