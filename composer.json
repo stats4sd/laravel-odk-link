@@ -17,13 +17,14 @@
     ],
     "require": {
         "php": "^8.0|^8.1",
+        "ext-fileinfo": "*",
+        "ext-zlib": "*",
         "backpack/crud": "^5.2",
         "backpack/pro": "^1.2",
+        "livewire/livewire": "^2.10",
         "maatwebsite/excel": "^3.1.4",
         "spatie/laravel-package-tools": "^1.9.2",
-        "stats4sd/laravel-file-util": "dev-local-only",
-        "ext-zlib": "*",
-        "ext-fileinfo": "*"
+        "stats4sd/laravel-file-util": "dev-local-only"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",
