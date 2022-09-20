@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use App\Models\User;
+use Stats4sd\OdkLink\OdkLink;
+use Stats4sd\OdkLink\Services\OdkLinkService;
 
 class Xlsform extends Model
 {
@@ -29,6 +31,7 @@ class Xlsform extends Model
     public $appends = [
         'title',
         'draft_qr_code_string',
+        'current_version',
     ];
 
     /*
@@ -119,14 +122,15 @@ class Xlsform extends Model
     }
 
 
-    public function getCurrentVersion()
+    public function getCurrentVersionAttribute()
     {
         return $this->xlsformVersions()
             ->where('active', 1)
-            ->sort_by('created_at')
-            ->last()
-            ->version;
+            ->orderBy('created_at')
+            ->get()
+            ->last()?->version ?? null;
     }
+
 
     /*
      * Gets the direct url to the form on the ODK Aggregate Service
@@ -198,6 +202,25 @@ class Xlsform extends Model
         $json = json_encode($settings, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
 
         return base64_encode(zlib_encode($json, ZLIB_ENCODING_DEFLATE));
+
+    }
+
+    public function deployDraft(OdkLinkService $service): void
+    {
+
+        $odkXlsFormDetails = $service->createDraftForm($this);
+
+        $this->update([
+            'odk_id' => $odkXlsFormDetails['xmlFormId'],
+            'odk_draft_token' => $odkXlsFormDetails['draftToken'],
+            'odk_version_id' => $odkXlsFormDetails['version'],
+            'has_draft' => true,
+            'enketo_draft_url' => $odkXlsFormDetails['enketoId'],
+        ]);
+    }
+
+    public function deployLive(OdkLinkService $service): void
+    {
 
     }
 }

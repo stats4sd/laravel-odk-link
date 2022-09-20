@@ -14,7 +14,9 @@ class Submission extends Model
     use HasFactory;
 
     protected $table = 'submissions';
-    protected $guarded = ['id'];
+    public $incrementing = false;
+    public $keyType = 'string';
+    protected $guarded = [];
     protected $casts = [
         'content' => 'array',
         'errors' => 'array',

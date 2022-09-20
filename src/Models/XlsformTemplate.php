@@ -52,6 +52,7 @@ class XlsformTemplate extends Model
         return $this->hasMany(Xlsform::class);
     }
 
+    // A template is either available to everyone (owner_id === NULL), or is owned by a single entity.
     public function owner(): MorphTo
     {
         return $this->morphTo();

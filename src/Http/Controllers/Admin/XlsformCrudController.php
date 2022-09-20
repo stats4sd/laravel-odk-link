@@ -106,17 +106,6 @@ class XlsformCrudController extends CrudController
      */
     public function deployDraft(Xlsform $xlsform, OdkLinkService $odkLinkService): Response
     {
-        $odkXlsFormDetails = $odkLinkService->createDraftForm($xlsform);
-
-
-        $xlsform->update([
-            'odk_id' => $odkXlsFormDetails['xmlFormId'],
-            'odk_draft_token' => $odkXlsFormDetails['draftToken'],
-            'odk_version_id' => $odkXlsFormDetails['version'],
-            'has_draft' => true,
-            'enketo_draft_url' => $odkXlsFormDetails['enketoId'],
-        ]);
-
 
         return response("Successfully created draft form on ODK Central");
     }
@@ -131,11 +120,7 @@ class XlsformCrudController extends CrudController
         }
         $odkXlsFormDetails = $odkLinkService->publishForm($xlsform);
 
-        $xlsform->update([
-            'has_draft' => false,
-            'is_active' => true,
-            'odk_version_id' => $odkXlsFormDetails->version,
-        ]);
+
 
         return response([
             "type" => 'success',
@@ -155,9 +140,6 @@ class XlsformCrudController extends CrudController
 
         $odkXlsFormDetails = $odkLinkService->archiveForm($xlsform);
 
-        $xlsform->update([
-            'is_active' => false,
-        ]);
     }
 
     public function updateXlsFileFromTemplate(Xlsform $xlsform)

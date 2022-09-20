@@ -3,6 +3,7 @@
 namespace Stats4sd\OdkLink\Services;
 
 use _PHPStan_9a6ded56a\React\Http\Message\ResponseException;
+use Carbon\Carbon;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Psr\SimpleCache\InvalidArgumentException;
+use SaintSystems\OData\ODataClient;
 use Stats4sd\OdkLink\Exports\SqlViewExport;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use Stats4sd\OdkLink\Models\AppUser;
@@ -74,7 +76,6 @@ class OdkLinkService
     public function createProjectAppUser(OdkProject $odkProject): array
     {
         $token = $this->authenticate();
-
 
 
         // create new user
@@ -268,44 +269,47 @@ class OdkLinkService
 
         $token = $this->authenticate();
 
-        // create a new version locally
-        $version = 1;
+//        // create a new version locally
+//        $version = 1;
+//
+//        // if there is an existing version; increment the version number;
+//        if ($xlsform->xlsformVersions()->count() > 0) {
+//            $version = $xlsform->xlsformVersions()->orderBy('version', 'desc')->first()->version + 1;
+//        }
 
-        // if there is an existing version; increment the version number;
-        if ($xlsform->xlsformVersions()->count() > 0) {
-            $version = $xlsform->xlsformVersions()->orderBy('version', 'desc')->first()->version + 1;
-        }
-
-        dump('running publish post');
         Http::withToken($token)
-            ->post("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/draft/publish?version={$version}")
+            ->post("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/draft/publish?version=" . Carbon::now()->toDateTimeString())
             ->throw()
             ->json();
 
-        // TODO: move all of this into some form of XlsformVersion handler!
+        // Get the version information;
+        $formDetails = Http::withToken($token)
+            ->get("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}")
+            ->throw()
+            ->json();
 
+        $version = $formDetails['version'];
+
+        if ($formDetails['state'] !== 'open') {
+            $formDetails = $this->unArchiveForm($xlsform);
+        }
+
+
+        // TODO: move all of this into some form of XlsformVersion handler!
         // deactivate all other versions;
         $xlsform->xlsformVersions()->update([
             'active' => false,
         ]);
+        $xlsformVersion = $this->createNewVersion($xlsform, $version);
 
-        // base xlsfile name
-        $fileName = collect(explode("/", $xlsform->xlsfile))->last();
-
-        // copy xlsform file to store linked to this version forever
-        Storage::disk(config('odk-link.storage.xlsforms'))
-            ->copy(
-                $xlsform->xlsfile,
-                "xlsforms/{$xlsform->id}/versions/{$version}/{$fileName}"
-            );
-
-        // create new active version with latest version number;
-        return $xlsform->xlsformVersions()->create([
-            'version' => $version,
-            'xlsfile' => "xlsforms/{$xlsform->id}/versions/{$version}/{$fileName}",
-            'odk_version' => $version,
-            'active' => true,
+        $xlsform->update([
+            'has_draft' => false,
+            'is_active' => true,
+            'odk_version_id' => $xlsformVersion->version,
         ]);
+        $xlsform->save();
+
+        return $xlsformVersion;
 
     }
 
@@ -314,16 +318,22 @@ class OdkLinkService
      * @param Xlsform $xlsform
      * @return array $xlsformDetails
      */
-    public function archiveForm(Xlsform $xlsform): bool
+    public function archiveForm(Xlsform $xlsform): array
     {
         $token = $this->authenticate();
 
-        return Http::withToken($token)
-            ->patch("{$this->endpoint}/projects{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}", [
+        $result = Http::withToken($token)
+            ->patch("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}", [
                 'state' => 'closed',
             ])
             ->throw()
             ->json();
+
+        $xlsform->update([
+            'is_active' => false,
+        ]);
+
+        return $result;
 
     }
 
@@ -375,7 +385,7 @@ class OdkLinkService
     public function test()
     {
 
-        $data =  Http::withToken($this->authenticate())
+        $data = Http::withToken($this->authenticate())
             ->get("{$this->endpoint}/projects/24/app-users")
             ->throw()
             ->json();
@@ -391,6 +401,126 @@ class OdkLinkService
         );
 
         return 'hi';
+    }
+
+    public function unArchiveForm(Xlsform $xlsform)
+    {
+        $token = $this->authenticate();
+
+        return Http::withToken($token)
+            ->patch("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}", [
+                'state' => 'open',
+            ])
+            ->throw()
+            ->json();
+    }
+
+    /**
+     * @param Xlsform $xlsform
+     * @param mixed $version
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function createNewVersion(Xlsform $xlsform, mixed $version): \Illuminate\Database\Eloquent\Model
+    {
+        // base xlsfile name
+        $fileName = collect(explode("/", $xlsform->xlsfile))->last();
+        $versionSlug = Str::slug($version);
+
+        // copy xlsform file to store linked to this version forever
+        Storage::disk(config('odk-link.storage.xlsforms'))
+            ->copy(
+                $xlsform->xlsfile,
+                "xlsforms/{$xlsform->id}/versions/{$versionSlug}/{$fileName}"
+            );
+
+        // create new active version with latest version number;
+        $xlsformVersion = $xlsform->xlsformVersions()->create([
+            'version' => $version,
+            'xlsfile' => "xlsforms/{$xlsform->id}/versions/{$versionSlug}/{$fileName}",
+            'odk_version' => $version,
+            'active' => true,
+        ]);
+        return $xlsformVersion;
+    }
+
+
+    public function getSubmissions(Xlsform $xlsform)
+    {
+        $token = $this->authenticate();
+        $oDataServiceUrl = "{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}.svc";
+
+        $odataClient = new ODataClient($oDataServiceUrl, function($request) use ($token) {
+            $request->headers['Authorization'] = 'Bearer ' .$token;
+        });
+
+        // $results = $odataClient->from('Submissions')->expand('*')->get();
+
+        $results = Http::withToken($token)
+            ->get($oDataServiceUrl . '/Submissions?$expand=*')
+            ->throw()
+            ->json();
+
+        $resultsToAdd = Collect($results['value'])->whereNotIn('__id', $xlsform->submissions->pluck('id')->toArray());
+
+        foreach($resultsToAdd as $entry) {
+
+            $xlsformVersion = $xlsform->xlsformVersions()->firstWhere('version', $entry['__system']['formVersion']);
+            $xlsformVersion?->submissions()->create([
+                'id' => $entry['__id'],
+                'submitted_at' => (new Carbon($entry['__system']['submissionDate']))->toDateTimeString(),
+                'submitted_by' => $entry['__system']['submitterName'],
+                'uuid' => $entry['__id'],
+                'content' => $entry,
+            ]);
+        }
+    }
+
+    public function getSubmissionsT(Xlsform $xlsform)
+    {
+        // get submissions from all versions of the form...
+        $token = $this->authenticate();
+        dump($xlsform->owner->odkProject->id);
+        dump($xlsform->odk_id);
+
+        // figure out how many calls are needed (1 call for the core and 1 for each repeat...)[
+        $tableList = Http::withToken($token)
+            ->get("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}.svc")
+            ->throw()
+            ->json();
+
+        $data = [];
+
+        foreach($tableList['value'] as $tableDefinition) {
+            $response = Http::withToken($token)
+            ->get("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}.svc/{$tableDefinition['url']}")
+                ->throw()
+                ->json();
+
+            $data[$tableDefinition['url']] = $response['value'];
+        }
+
+        // merge repeat groups into individual submissions
+
+        foreach($data as $table => $entries) {
+            // check if there's a 'parent' table;
+            if(Str::of($table)->contains('.')){
+                $parent = Str::of($table)->explode('.')->slice(0, -1)->implode('.');
+
+                $parentKey = Str::of($parent)->replace('.', '-')->prepend('__')->append('-id')->toString();
+                $parentEntry[$table] = [];
+                foreach($entries as $entry) {
+                    $parentEntryIndex = Collect($data[$parent]);
+                    //->where('__id', $entry[$parentKey]);
+                    dd($parentEntryIndex);
+                    $parentEntry[$table][] = $entry;
+                }
+                dump($parentEntryIndex);
+                // ... help! this is terrible, and doesn't work.
+            }
+        }
+
+        dd($data);
+
     }
 }
 

@@ -6,6 +6,7 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Stats4sd\OdkLink\Commands\AddCrudPanelLinksToSidebar;
 use Stats4sd\OdkLink\Commands\AddDemoEntries;
+use Stats4sd\OdkLink\Commands\GenerateSubmissionRecords;
 use Stats4sd\OdkLink\Services\OdkLinkService;
 
 class OdkLinkServiceProvider extends PackageServiceProvider
@@ -35,6 +36,7 @@ class OdkLinkServiceProvider extends PackageServiceProvider
             ->hasCommands([
                 AddCrudPanelLinksToSidebar::class,
                 AddDemoEntries::class,
+                GenerateSubmissionRecords::class,
             ]);
 
     }
