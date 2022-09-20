@@ -2,10 +2,13 @@
 
 namespace Stats4sd\OdkLink;
 
+use Livewire\Livewire;
+use Rappasoft\LaravelLivewireTables\DataTableComponent;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Stats4sd\OdkLink\Commands\AddCrudPanelLinksToSidebar;
 use Stats4sd\OdkLink\Commands\AddDemoEntries;
+use Stats4sd\OdkLink\Http\Livewire\OwnerFormsTable;
 use Stats4sd\OdkLink\Services\OdkLinkService;
 
 class OdkLinkServiceProvider extends PackageServiceProvider
@@ -44,5 +47,11 @@ class OdkLinkServiceProvider extends PackageServiceProvider
         $this->app->singleton(OdkLinkService::class, function ($app) {
             return new OdkLinkService(config('odk-link.odk.base_endpoint'));
         });
+    }
+
+    public function bootingPackage(): void
+    {
+        Livewire::component('owner-forms-table', OwnerFormsTable::class);
+
     }
 }
