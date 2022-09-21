@@ -459,12 +459,14 @@ class OdkLinkService
             ->throw()
             ->json();
 
+
         $resultsToAdd = Collect($results['value'])->whereNotIn('__id', $xlsform->submissions->pluck('id')->toArray());
 
-        foreach($resultsToAdd as $entry) {
 
+        foreach($resultsToAdd as $entry) {
             $xlsformVersion = $xlsform->xlsformVersions()->firstWhere('version', $entry['__system']['formVersion']);
-            $xlsformVersion?->submissions()->create([
+
+             $xlsformVersion?->submissions()->create([
                 'id' => $entry['__id'],
                 'submitted_at' => (new Carbon($entry['__system']['submissionDate']))->toDateTimeString(),
                 'submitted_by' => $entry['__system']['submitterName'],
@@ -472,6 +474,7 @@ class OdkLinkService
                 'content' => $entry,
             ]);
         }
+
     }
 }
 

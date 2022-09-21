@@ -16,29 +16,42 @@ class OdkSubmissionContentExport implements WithMultipleSheets
     public Collection $keys;
     public Collection $content;
     public Collection $repeats;
+    public array $sheets;
 
     public function __construct(public Xlsform $xlsform)
     {
         $this->content = $this->extractContent($xlsform);
         [$this->keys, $this->repeats] = $this->extractKeysAndRepeats($this->content);
+
     }
 
     public function sheets(): array
     {
-        $sheets = [
+        $this->sheets = [
             new OdkMainSurveyExport($this->content, $this->keys),
         ];
 
-        foreach ($this->repeats as $repeatName) {
-            $sheets[] = new OdkRepeatExport($this->content, $repeatName);
-        }
+        $this->handleRepeats($this->content, $this->repeats, 'main_survey');
 
-        return $sheets;
+        return $this->sheets;
     }
 
     private function extractContent(Xlsform $xlsform): Collection
     {
         return $xlsform->submissions->pluck('content');
+    }
+
+    private function extractRepeatContent(Collection $content, string $repeat, string $parent): Collection
+    {
+        return $content->pluck($repeat, '__id')
+            ->flatMap(function($entries, $id) use ($parent) {
+
+                return collect($entries)->map(function($entry) use ($id, $parent) {
+                    $entry['__parent_id'] = $id;
+                    $entry['__parent_table'] = $parent;
+                    return $entry;
+                });
+            });
     }
 
     private function extractKeysAndRepeats(Collection $content): array
@@ -63,5 +76,19 @@ class OdkSubmissionContentExport implements WithMultipleSheets
         });
 
         return [$keys, $repeats];
+    }
+
+    private function handleRepeats(Collection $content, Collection $repeats, string $parent): void
+    {
+        foreach ($repeats as $repeatName) {
+           $repeatContent = $this->extractRepeatContent($content, $repeatName, $parent);
+
+           [$repeatKeys, $repeatRepeats] = $this->extractKeysAndRepeats($repeatContent);
+
+            $this->sheets[] = new OdkRepeatExport($repeatContent, $repeatKeys, $repeatName);
+
+            $this->handleRepeats($repeatContent, $repeatRepeats, $repeatName);
+        }
+
     }
 }

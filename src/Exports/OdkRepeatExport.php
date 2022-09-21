@@ -16,22 +16,24 @@ class OdkRepeatExport implements FromCollection, WithHeadings, WithTitle
 {
     use HandlesOdkSubmissions;
 
-    public function __construct(public Collection $content, public string $repeatName)
+    public function __construct(public Collection $content, public Collection $keys, public string $repeatName)
     {
     }
 
     public function collection()
     {
-        return collect([]);
+        return $this->content->map(function($entry) {
+            return collect($entry)->only($this->keys)->toArray();
+        });
     }
 
     public function headings(): array
     {
-        return [];
+        return $this->keys->toArray();
     }
 
     public function title(): string
     {
-        return $this->repeatName
+        return $this->repeatName;
     }
 }

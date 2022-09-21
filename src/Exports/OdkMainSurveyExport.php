@@ -16,9 +16,6 @@ use Stats4sd\OdkLink\Models\Xlsform;
 class OdkMainSurveyExport implements FromCollection, WithHeadings, WithTitle
 {
 
-    use HandlesOdkSubmissions;
-
-
     public function __construct(public Collection $content, public Collection $keys)
     {
     }
@@ -28,6 +25,7 @@ class OdkMainSurveyExport implements FromCollection, WithHeadings, WithTitle
         return $this->content->map(function ($entry) {
 
             $data = collect($entry)->only($this->keys);
+
             $data['form_version'] = $entry['__system']['formVersion'];
             $data['submitter_name'] = $entry['__system']['submitterName'];
             $data['submission_date'] = $entry['__system']['submissionDate'];
@@ -50,6 +48,6 @@ class OdkMainSurveyExport implements FromCollection, WithHeadings, WithTitle
 
     public function title(): string
     {
-        return 'Main Survey';
+        return 'main_survey';
     }
 }
