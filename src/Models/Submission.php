@@ -40,8 +40,13 @@ class Submission extends Model
         $this->save();
     }
 
-    public function xlsform(): BelongsTo
+    public function getXlsformTitleAttribute()
     {
-        return $this->belongsTo(Xlsform::class);
+        return $this->xlsformVersion->xlsform->title;
+    }
+
+    public function xlsformVersion(): BelongsTo
+    {
+        return $this->belongsTo(XlsformVersion::class);
     }
 }

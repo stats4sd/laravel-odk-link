@@ -71,6 +71,7 @@ class OdkLinkService
             ])
             ->throw()
             ->json();
+
     }
 
     public function createProjectAppUser(OdkProject $odkProject): array
@@ -78,19 +79,21 @@ class OdkLinkService
         $token = $this->authenticate();
 
 
-        // create new user
+        // create new app-user
         $userResponse = Http::withToken($token)
             ->post("{$this->endpoint}/projects/{$odkProject->id}/app-users", [
-                'displayName' => $odkProject->owner->name . $odkProject->appUserCount(),
+                'displayName' => 'All Forms - ' . $odkProject->owner->name . " - " . $odkProject->appUsers()->count()+1,
             ])
             ->throw()
             ->json();
 
-        // assign user to the project
-        return Http::withToken($token)
+        // assign user to all the forms in the project
+        Http::withToken($token)
             ->post("{$this->endpoint}/projects/{$odkProject->id}/assignments/manager/{$userResponse['id']}")
             ->throw()
             ->json();
+
+        return $userResponse;
 
     }
 
@@ -449,10 +452,6 @@ class OdkLinkService
         $token = $this->authenticate();
         $oDataServiceUrl = "{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}.svc";
 
-        $odataClient = new ODataClient($oDataServiceUrl, function($request) use ($token) {
-            $request->headers['Authorization'] = 'Bearer ' .$token;
-        });
-
         // $results = $odataClient->from('Submissions')->expand('*')->get();
 
         $results = Http::withToken($token)
@@ -473,54 +472,6 @@ class OdkLinkService
                 'content' => $entry,
             ]);
         }
-    }
-
-    public function getSubmissionsT(Xlsform $xlsform)
-    {
-        // get submissions from all versions of the form...
-        $token = $this->authenticate();
-        dump($xlsform->owner->odkProject->id);
-        dump($xlsform->odk_id);
-
-        // figure out how many calls are needed (1 call for the core and 1 for each repeat...)[
-        $tableList = Http::withToken($token)
-            ->get("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}.svc")
-            ->throw()
-            ->json();
-
-        $data = [];
-
-        foreach($tableList['value'] as $tableDefinition) {
-            $response = Http::withToken($token)
-            ->get("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}.svc/{$tableDefinition['url']}")
-                ->throw()
-                ->json();
-
-            $data[$tableDefinition['url']] = $response['value'];
-        }
-
-        // merge repeat groups into individual submissions
-
-        foreach($data as $table => $entries) {
-            // check if there's a 'parent' table;
-            if(Str::of($table)->contains('.')){
-                $parent = Str::of($table)->explode('.')->slice(0, -1)->implode('.');
-
-                $parentKey = Str::of($parent)->replace('.', '-')->prepend('__')->append('-id')->toString();
-                $parentEntry[$table] = [];
-                foreach($entries as $entry) {
-                    $parentEntryIndex = Collect($data[$parent]);
-                    //->where('__id', $entry[$parentKey]);
-                    dd($parentEntryIndex);
-                    $parentEntry[$table][] = $entry;
-                }
-                dump($parentEntryIndex);
-                // ... help! this is terrible, and doesn't work.
-            }
-        }
-
-        dd($data);
-
     }
 }
 

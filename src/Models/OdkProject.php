@@ -17,6 +17,8 @@ class OdkProject extends Model
     use CrudTrait;
 
     protected $fillable = ['id', 'name', 'archived', 'description', 'odk_user', 'odk_pass'];
+    public $incrementing = false;
+    public $keyType = 'integer';
     protected $table = 'odk_projects';
 
     public function owner(): MorphTo

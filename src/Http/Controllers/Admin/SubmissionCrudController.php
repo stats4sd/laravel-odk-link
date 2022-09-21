@@ -51,36 +51,37 @@ class SubmissionCrudController extends CrudController
      */
     protected function setupListOperation(): void
     {
-        CRUD::column('xlsform')->label('XLS Form')->type('relationship')->attribute('title');
+
+        CRUD::column('xlsform_title')->label('XLS Form')->limit(1000);
         CRUD::column('xlsformVersion')->label('Form Version')->type('relationship')->attribute('version');
-        CRUD::column('id')->label('Submission ID<br/> (from Kobo)');
+        CRUD::column('id')->label('Submission ID');
         CRUD::column('submitted_at')->type('datetime')->format('YYYY-MM-DD HH:mm:ss');
         CRUD::column('processed')->label('Processed?')->type('boolean');
         CRUD::column('errors')->label('Validation errors')->type('submission_errors')->view_namespace('kobo-link::crud.columns');
         CRUD::column('entries')->label('Db Entries created')->type('submission_entries')->view_namespace('kobo-link::crud.columns');
 
         CRUD::filter('xlsform')
-        ->type('select2')
-        ->label('Filter by Xls Form')
-        ->values(function () {
-            return Xlsform::get()->pluck('title', 'id')->toArray();
-        })
-        ->whenActive(function ($value) {
-            $this->crud->query->whereHas('xlsformTemplate', function($query) use ($value) {
-                $query->where('xlsform_id', $value);
+            ->type('select2')
+            ->label('Filter by Xls Form')
+            ->values(function () {
+                return Xlsform::get()->pluck('title', 'id')->toArray();
+            })
+            ->whenActive(function ($value) {
+                $this->crud->query->whereHas('xlsformTemplate', function ($query) use ($value) {
+                    $query->where('xlsform_id', $value);
+                });
             });
-        });
 
         CRUD::filter('errors')
-        ->type('simple')
-        ->label('Show submissions with errors')
-        ->whenActive(function () {
-            CRUD::addClause('where', 'errors', '!=', null);
-        });
+            ->type('simple')
+            ->label('Show submissions with errors')
+            ->whenActive(function () {
+                CRUD::addClause('where', 'errors', '!=', null);
+            });
 
         Crud::button('reprocess')
-        ->stack('line')
-        ->view('kobo-link::crud.buttons.submissions.reprocess');
+            ->stack('line')
+            ->view('odk-link::buttons.submissions.reprocess');
     }
 
 
@@ -91,13 +92,22 @@ class SubmissionCrudController extends CrudController
     {
         $this->setupListOperation();
 
-        CRUD::column('content')->type('closure')->function(/**
+        CRUD::column('content')->type('custom_html')->value(/**
          * @throws JsonException
          */ function ($entry) {
-            $content = json_decode($entry->content, true, 512, JSON_THROW_ON_ERROR);
+            if (!is_array($entry->content)) {
+                $content = json_decode($entry->content, true, 512, JSON_THROW_ON_ERROR);
+            } else {
+                $content = $entry->content;
+            }
 
+            return $this->createContentTable($content);
+        });
+    }
 
-            $output = '
+    public function createContentTable($array)
+    {
+        $output = '
             <table class="table table-striped">
             <tr>
             <th>Variable Name</th>
@@ -105,23 +115,27 @@ class SubmissionCrudController extends CrudController
             </tr>
             ';
 
-            foreach ($content as $key => $value) {
-                if (is_array($value)) {
-                    $value = json_encode($value, JSON_THROW_ON_ERROR);
-                }
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                if ($key === "__system" || $key === "meta") {
+                    $value = json_encode($value);
+                } else {
+                    $value = $this->createContentTable($value);
 
-                $output .= '
-                <tr>
-                    <td>'.$key.'</td>
-                    <td>'.$value.'</td>
-                </tr>
-                ';
+                }
             }
 
-            $output .= '</table>';
+            $output .= '
+                <tr>
+                    <td>' . $key . '</td>
+                    <td>' . $value . '</td>
+                </tr>
+                ';
+        }
 
-            return $output;
-        });
+        $output .= '</table>';
+
+        return $output;
     }
 
     /**
@@ -158,10 +172,10 @@ class SubmissionCrudController extends CrudController
                 continue;
             }
 
-            CRUD::field('_title'.$key)->type('custom_html')->value("<h5>$key</h5>");
-            CRUD::field('_label'.$key)->type('submission_variable')->value((string) $key)->fake(true);
-            CRUD::field($key)->type('submission_value')->value((string) $value)->fake(true);
-            CRUD::field('_end'.$key)->type('custom_html')->value('<hr/>');
+            CRUD::field('_title' . $key)->type('custom_html')->value("<h5>$key</h5>");
+            CRUD::field('_label' . $key)->type('submission_variable')->value((string)$key)->fake(true);
+            CRUD::field($key)->type('submission_value')->value((string)$value)->fake(true);
+            CRUD::field('_end' . $key)->type('custom_html')->value('<hr/>');
         }
     }
 
@@ -180,7 +194,7 @@ class SubmissionCrudController extends CrudController
         foreach ($request as $key => $value) {
 
             //handle value updates
-            if (! Str::startsWith($key, '_label')) {
+            if (!Str::startsWith($key, '_label')) {
                 $content[$key] = $value;
             }
         }

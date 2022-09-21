@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('display_name');
             $table->string('type');
             $table->string('token');
+            $table->boolean('can_access_all_forms')->default(0)->comment('App users might be assigned the "admin" role in a project; which automatically gives them access to all forms. Otherwise, they are manually assigned to specific forms via the app_user_assignments table');
             $table->timestamps();
         });
     }

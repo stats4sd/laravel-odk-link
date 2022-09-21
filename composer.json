@@ -24,8 +24,9 @@
         "livewire/livewire": "^2.10",
         "maatwebsite/excel": "^3.1.4",
         "saintsystems/odata-client": "^0.6.2",
+        "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-package-tools": "^1.9.2",
-        "stats4sd/laravel-file-util": "dev-laravel-9-support"
+        "stats4sd/laravel-file-util": "dev-main"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

@@ -36,10 +36,12 @@ class AppUser extends Model
         $settings = [
             "general" => [
                 "server_url" => config('odk-link.odk.base_endpoint') . "/key/{$this->token}/projects/{$this->odkProject->id}",
+                "form_update_mode" => "match_exactly",
             ],
             "project" => ["name" => $this->odkProject->name],
             "admin" => ["automatic_update" => true],
         ];
+        
 
         $json = json_encode($settings, JSON_UNESCAPED_SLASHES);
 
