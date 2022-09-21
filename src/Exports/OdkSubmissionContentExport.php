@@ -22,6 +22,7 @@ class OdkSubmissionContentExport implements WithMultipleSheets
     {
         $this->content = $this->extractContent($xlsform);
         [$this->keys, $this->repeats] = $this->extractKeysAndRepeats($this->content);
+        //$this->content = $this->padWithKeys($this->content, $this->keys);
 
     }
 
@@ -38,20 +39,20 @@ class OdkSubmissionContentExport implements WithMultipleSheets
 
     private function extractContent(Xlsform $xlsform): Collection
     {
-        return $xlsform->submissions->pluck('content');
+        return $xlsform->submissions->pluck('content')->map(fn($entry) => $this->processGps($entry));
     }
 
     private function extractRepeatContent(Collection $content, string $repeat, string $parent): Collection
     {
         return $content->pluck($repeat, '__id')
-            ->flatMap(function($entries, $id) use ($parent) {
+            ->flatMap(function ($entries, $id) use ($parent) {
 
-                return collect($entries)->map(function($entry) use ($id, $parent) {
+                return collect($entries)->map(function ($entry) use ($id, $parent) {
                     $entry['__parent_id'] = $id;
                     $entry['__parent_table'] = $parent;
                     return $entry;
                 });
-            });
+            })->map(fn($entry) => $this->processGps($entry));
     }
 
     private function extractKeysAndRepeats(Collection $content): array
@@ -81,9 +82,10 @@ class OdkSubmissionContentExport implements WithMultipleSheets
     private function handleRepeats(Collection $content, Collection $repeats, string $parent): void
     {
         foreach ($repeats as $repeatName) {
-           $repeatContent = $this->extractRepeatContent($content, $repeatName, $parent);
+            $repeatContent = $this->extractRepeatContent($content, $repeatName, $parent);
+            [$repeatKeys, $repeatRepeats] = $this->extractKeysAndRepeats($repeatContent);
 
-           [$repeatKeys, $repeatRepeats] = $this->extractKeysAndRepeats($repeatContent);
+            //$repeatContent = $this->padWithKeys($repeatContent,$repeatKeys);
 
             $this->sheets[] = new OdkRepeatExport($repeatContent, $repeatKeys, $repeatName);
 
@@ -91,4 +93,37 @@ class OdkSubmissionContentExport implements WithMultipleSheets
         }
 
     }
+
+    private function processGps($entry)
+    {
+        $gpsKeys = collect([]);
+        foreach ($entry as $key => $value) {
+            if (is_array($value) && isset($value['type']) && $value['type'] === "Point") {
+
+                $gpsKeys = $gpsKeys->merge($key);
+
+                $entry["{$key}_longitude"] = $value['coordinates'][0];
+                $entry["{$key}_latitude"] = $value['coordinates'][1];
+                $entry["{$key}_altitude"] = $value['coordinates'][2];
+                $entry["{$key}_accuracy"] = $value['properties']['accuracy'];
+
+                unset($entry[$key]);
+            }
+        }
+
+        return $entry;
+    }
+
+//    private function padWithKeys(Collection $content, $keys)
+//    {
+//        return $content->map(function($entry) use ($keys) {
+//            foreach($keys as $key) {
+//                if(!isset($entry[$key])) {
+//                    $entry[$key] = 'na';
+//                }
+//            }
+//
+//            return $entry;
+//        });
+//    }
 }

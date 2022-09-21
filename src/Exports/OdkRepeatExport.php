@@ -23,7 +23,15 @@ class OdkRepeatExport implements FromCollection, WithHeadings, WithTitle
     public function collection()
     {
         return $this->content->map(function($entry) {
-            return collect($entry)->only($this->keys)->toArray();
+
+            $data = [];
+
+            // ensure that returned collection has an entry for every key, even if the original submission did not;
+            foreach($this->keys as $key) {
+                $data[$key] = $entry[$key] ?? null;
+            }
+
+            return $data;
         });
     }
 
