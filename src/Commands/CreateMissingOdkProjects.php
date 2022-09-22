@@ -44,7 +44,7 @@ class CreateMissingOdkProjects extends Command
         }
 
         foreach($formOwnerClasses as $class) {
-            $entriesWithoutOdkProject = $class->doesntHave('odkProject')->get()
+            $entriesWithoutOdkProject = $class::doesntHave('odkProject')->get()
                 ->each(function($owner) {
                     $owner->createLinkedOdkProject();
                 });
