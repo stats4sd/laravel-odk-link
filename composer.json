@@ -75,10 +75,6 @@
     },
     "repositories": [
         {
-            "type": "path",
-            "url": "../laravel-file-util"
-        },
-        {
             "type": "composer",
             "url": "https://repo.backpackforlaravel.com/"
         }
