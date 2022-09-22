@@ -8,14 +8,22 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Stats4sd\OdkLink\Models\XlsformTemplate;
+use Stats4sd\OdkLink\Services\OdkLinkService;
 use Stats4sd\OdkLink\Traits\HasXlsforms;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class CreateMissingOdkProjects extends Command
 {
     public $signature = 'odk:create-missing';
-
     public $description = 'Checks through all models of the given type (should be form owners), and creates OdkProject entries if they are missing. Useful when adding this package to an existing project with existing form owners';
+    public OdkLinkService $odkLinkService;
+
+    public function __construct(OdkLinkService $odkLinkService)
+    {
+        parent::__construct();
+
+        $this->odkLinkService = $odkLinkService;
+    }
 
     public function handle(): int
     {
@@ -46,7 +54,7 @@ class CreateMissingOdkProjects extends Command
         foreach($formOwnerClasses as $class) {
             $entriesWithoutOdkProject = $class::doesntHave('odkProject')->get()
                 ->each(function($owner) {
-                    $owner->createLinkedOdkProject();
+                    $owner->createLinkedOdkProject($this->odkLinkService);
                 });
         }
 
