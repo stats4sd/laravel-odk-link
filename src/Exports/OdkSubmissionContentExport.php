@@ -22,7 +22,7 @@ class OdkSubmissionContentExport implements WithMultipleSheets
     {
         $this->content = $this->extractContent($xlsform);
         [$this->keys, $this->repeats] = $this->extractKeysAndRepeats($this->content);
-        //$this->content = $this->padWithKeys($this->content, $this->keys);
+
 
     }
 
@@ -85,8 +85,6 @@ class OdkSubmissionContentExport implements WithMultipleSheets
             $repeatContent = $this->extractRepeatContent($content, $repeatName, $parent);
             [$repeatKeys, $repeatRepeats] = $this->extractKeysAndRepeats($repeatContent);
 
-            //$repeatContent = $this->padWithKeys($repeatContent,$repeatKeys);
-
             $this->sheets[] = new OdkRepeatExport($repeatContent, $repeatKeys, $repeatName);
 
             $this->handleRepeats($repeatContent, $repeatRepeats, $repeatName);
@@ -114,16 +112,4 @@ class OdkSubmissionContentExport implements WithMultipleSheets
         return $entry;
     }
 
-//    private function padWithKeys(Collection $content, $keys)
-//    {
-//        return $content->map(function($entry) use ($keys) {
-//            foreach($keys as $key) {
-//                if(!isset($entry[$key])) {
-//                    $entry[$key] = 'na';
-//                }
-//            }
-//
-//            return $entry;
-//        });
-//    }
 }
