@@ -25,26 +25,7 @@ trait HasXlsforms
 
         // when the model is created; automatically create an associated project on ODK Central;
         static::created(function ($owner) use ($odkLinkService) {
-            $odkProjectInfo = $odkLinkService->createProject($owner->name);
-            $odkProject = $owner->odkProject()->create([
-                'id' => $odkProjectInfo['id'],
-                'name' => $odkProjectInfo['name'],
-                'archived' => $odkProjectInfo['archived'],
-            ]);
-
-            dump('---');
-            dump($odkProject);
-
-            // create an app user + assign to all forms in the project by giving them the admin role;
-            $odkAppUserInfo = $odkLinkService->createProjectAppUser($odkProject);
-
-            $odkProject->appUsers()->create([
-                'id' => $odkAppUserInfo['id'],
-                'display_name' => $odkAppUserInfo['displayName'],
-                'type' => 'field_key', // legacy term for "App User" in ODK Central;
-                'token' => $odkAppUserInfo['token'], // the token required to generate the ODK QR Code;
-                'can_access_all_forms' => true,
-            ]);
+            $this->createLinkedOdkProject($odkLinkService, $owner);
         });
     }
 
@@ -67,6 +48,32 @@ trait HasXlsforms
     public function odkProject(): MorphOne
     {
         return $this->morphOne(OdkProject::class, 'owner');
+    }
+
+    /**
+     * @param mixed $odkLinkService
+     * @param $owner
+     * @return void
+     */
+    function createLinkedOdkProject(mixed $odkLinkService, $owner): void
+    {
+        $odkProjectInfo = $odkLinkService->createProject($owner->name);
+        $odkProject = $owner->odkProject()->create([
+            'id' => $odkProjectInfo['id'],
+            'name' => $odkProjectInfo['name'],
+            'archived' => $odkProjectInfo['archived'],
+        ]);
+
+        // create an app user + assign to all forms in the project by giving them the admin role;
+        $odkAppUserInfo = $odkLinkService->createProjectAppUser($odkProject);
+
+        $odkProject->appUsers()->create([
+            'id' => $odkAppUserInfo['id'],
+            'display_name' => $odkAppUserInfo['displayName'],
+            'type' => 'field_key', // legacy term for "App User" in ODK Central;
+            'token' => $odkAppUserInfo['token'], // the token required to generate the ODK QR Code;
+            'can_access_all_forms' => true,
+        ]);
     }
 
 
