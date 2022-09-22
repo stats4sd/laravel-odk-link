@@ -4,6 +4,7 @@ namespace Stats4sd\OdkLink\Services;
 
 use _PHPStan_9a6ded56a\React\Http\Message\ResponseException;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
@@ -291,8 +292,6 @@ class OdkLinkService
             ->throw()
             ->json();
 
-        $version = $formDetails['version'];
-
         if ($formDetails['state'] !== 'open') {
             $formDetails = $this->unArchiveForm($xlsform);
         }
@@ -303,7 +302,8 @@ class OdkLinkService
         $xlsform->xlsformVersions()->update([
             'active' => false,
         ]);
-        $xlsformVersion = $this->createNewVersion($xlsform, $version);
+
+        $xlsformVersion = $this->createNewVersion($xlsform, $formDetails);
 
         $xlsform->update([
             'has_draft' => false,
@@ -421,13 +421,16 @@ class OdkLinkService
     /**
      * @param Xlsform $xlsform
      * @param mixed $version
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return Model
      */
-    public function createNewVersion(Xlsform $xlsform, mixed $version): \Illuminate\Database\Eloquent\Model
+    public function createNewVersion(Xlsform $xlsform, array $versionDetails): Model
     {
+        $token = $this->authenticate();
+
+
         // base xlsfile name
         $fileName = collect(explode("/", $xlsform->xlsfile))->last();
-        $versionSlug = Str::slug($version);
+        $versionSlug = Str::slug($versionDetails['version']);
 
         // copy xlsform file to store linked to this version forever
         Storage::disk(config('odk-link.storage.xlsforms'))
@@ -436,13 +439,22 @@ class OdkLinkService
                 "xlsforms/{$xlsform->id}/versions/{$versionSlug}/{$fileName}"
             );
 
+        // get schema from ODK Central;
+        $schema = Http::withToken($token)
+            ->get("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/versions/{$versionDetails['version']}/fields?odata=true")
+            ->throw()
+            ->json();
+
         // create new active version with latest version number;
         $xlsformVersion = $xlsform->xlsformVersions()->create([
             'version' => $version,
             'xlsfile' => "xlsforms/{$xlsform->id}/versions/{$versionSlug}/{$fileName}",
             'odk_version' => $version,
             'active' => true,
+            'schema' => $schema,
         ]);
+
+
         return $xlsformVersion;
     }
 
@@ -465,6 +477,8 @@ class OdkLinkService
 
         foreach($resultsToAdd as $entry) {
             $xlsformVersion = $xlsform->xlsformVersions()->firstWhere('version', $entry['__system']['formVersion']);
+
+            // GET schema information for the specific version :)
 
              $xlsformVersion?->submissions()->create([
                 'id' => $entry['__id'],
