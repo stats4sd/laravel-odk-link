@@ -103,6 +103,12 @@ class XlsformTemplateCrudController extends CrudController
                 'hint' => '(Do different users or teams have different data for this csv lookup file?)',
             ],
             [
+                'name' => 'owner_foreign_key',
+                'type' => 'text',
+                'label' => 'Which column in the MySQL view or table references the owner of the form?',
+                'hint' => 'e.g. "team_id", or "user_id" ',
+            ],
+            [
                 'name' => 'external_file',
                 'type' => 'checkbox',
                 'label' => 'Is this file to be used with either a select_one_from_external or select_multiple_from_external question type?',

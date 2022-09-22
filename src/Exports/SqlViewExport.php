@@ -8,13 +8,8 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class SqlViewExport implements \Maatwebsite\Excel\Concerns\FromCollection, WithHeadings
 {
-    public string $viewName;
-    public mixed $owner;
-
-    public function __construct(string $viewName, $owner = null)
+    public function __construct(public string $viewName, public mixed $owner = null, public ?string $ownerForeignKey = null)
     {
-        $this->viewName = $viewName;
-        $this->owner = $owner;
     }
 
     public function collection(): \Illuminate\Support\Collection
@@ -22,15 +17,20 @@ class SqlViewExport implements \Maatwebsite\Excel\Concerns\FromCollection, WithH
         if ($this->owner) {
 
             // filter query to only return items linked to the given owner
-            $collection = DB::table($this->viewName)
-                ->where('owner_id', '=', $this->owner->id)
-                ->where('owner_type', '=', get_class($this->owner))
-                ->get();
+            $query = DB::table($this->viewName);
+
+            if ($this->ownerForeignKey) {
+                $query = $query->where($this->ownerForeignKey, '=', $this->owner->id);
+            } else {
+                $query = $query
+                    ->where('owner_id', '=', $this->owner->id)
+                    ->where('owner_type', '=', get_class($this->owner));
+            }
 
             // unset the owner identifier variables
-            return $collection->map(function ($item) {
-                unset($item->owner_id);
-                unset($item->owner_type);
+            return $query->get()->map(function ($item) {
+                $foreignKey = $this->ownerForeignKey;
+                unset($item->owner_id, $item->owner_type, $item->$foreignKey);
 
                 return $item;
             });
@@ -46,7 +46,7 @@ class SqlViewExport implements \Maatwebsite\Excel\Concerns\FromCollection, WithH
         return collect($example->first())
             ->keys()
             ->filter(function ($heading) {
-                return $heading !== "owner_id" && $heading !== "owner_type";
+                return $heading !== "owner_id" && $heading !== "owner_type" && $heading !== $this->ownerForeignKey;
             })->toArray();
     }
 }
