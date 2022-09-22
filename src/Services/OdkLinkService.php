@@ -67,9 +67,12 @@ class OdkLinkService
     {
         $token = $this->authenticate();
 
+        // prepend platform identifier to project name;
+        $name = config('app.name') . ' -- ' . $name;
+
         return Http::withToken($token)
             ->post("{$this->endpoint}/projects", [
-                'name' => $name,
+                'name' => $name
             ])
             ->throw()
             ->json();

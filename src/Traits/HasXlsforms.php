@@ -55,7 +55,7 @@ trait HasXlsforms
      * @param $owner
      * @return void
      */
-    function createLinkedOdkProject(mixed $odkLinkService, $owner): void
+    function createLinkedOdkProject(OdkLinkService $odkLinkService, $owner): void
     {
         $odkProjectInfo = $odkLinkService->createProject($owner->name);
         $odkProject = $owner->odkProject()->create([
