@@ -1,7 +1,7 @@
+# Laravel ODK Link 
+- A version 2.0 update to the Kobo Link package, intended to be easier to set up and more flexible by allowing the user to choose between multiple ODK Aggregate services.
 
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/support-ukraine.svg?t=1" />](https://supportukrainenow.org)
-
-# A version 2.0 update to the Kobo Link package, intended to be easier to set up and more flexible by allowing the user to choose between multiple ODK Aggregate services.
+> # NOTE: This is still in development. Currently it requires Laravel Backpack Pro, which is a paid product. We are refactoring this to use the free version of Backpack to enable us to share this properly with an open licence.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/stats4sd/laravel-odk-link.svg?style=flat-square)](https://packagist.org/packages/stats4sd/laravel-odk-link)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/stats4sd/laravel-odk-link/run-tests?label=tests)](https://github.com/stats4sd/laravel-odk-link/actions?query=workflow%3Arun-tests+branch%3Amain)
