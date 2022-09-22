@@ -2,7 +2,6 @@
 
 namespace Stats4sd\OdkLink\Jobs;
 
-use _PHPStan_9a6ded56a\Throwable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -58,7 +57,7 @@ class UpdateXlsformTitleInFile implements ShouldQueue
             $cellIterator->setIterateOnlyExistingCells(true);
 
             foreach ($cellIterator as $cell) {
-                if ($cell->getValue() === "form_id") {
+                if ($cell->getValue() === "form_id" || $cell->getValue() === "id_string") {
 
                     $coordinates = $cell->getCoordinate();
 

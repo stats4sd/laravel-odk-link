@@ -25,11 +25,25 @@ trait HasXlsforms
 
         // when the model is created; automatically create an associated project on ODK Central;
         static::created(function ($owner) use ($odkLinkService) {
-            $odkProject = $odkLinkService->createProject($owner->name);
-            $owner->odkProject()->create([
-                'id' => $odkProject['id'],
-                'name' => $odkProject['name'],
-                'archived' => $odkProject['archived'],
+            $odkProjectInfo = $odkLinkService->createProject($owner->name);
+            $odkProject = $owner->odkProject()->create([
+                'id' => $odkProjectInfo['id'],
+                'name' => $odkProjectInfo['name'],
+                'archived' => $odkProjectInfo['archived'],
+            ]);
+
+            dump('---');
+            dump($odkProject);
+
+            // create an app user + assign to all forms in the project by giving them the admin role;
+            $odkAppUserInfo = $odkLinkService->createProjectAppUser($odkProject);
+
+            $odkProject->appUsers()->create([
+                'id' => $odkAppUserInfo['id'],
+                'display_name' => $odkAppUserInfo['displayName'],
+                'type' => 'field_key', // legacy term for "App User" in ODK Central;
+                'token' => $odkAppUserInfo['token'], // the token required to generate the ODK QR Code;
+                'can_access_all_forms' => true,
             ]);
         });
     }

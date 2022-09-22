@@ -23,9 +23,9 @@
         "backpack/pro": "^1.2",
         "livewire/livewire": "^2.10",
         "maatwebsite/excel": "^3.1.4",
-        "rappasoft/laravel-livewire-tables": "^2.8",
+        "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-package-tools": "^1.9.2",
-        "stats4sd/laravel-file-util": "dev-local-only"
+        "stats4sd/laravel-file-util": "dev-main"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

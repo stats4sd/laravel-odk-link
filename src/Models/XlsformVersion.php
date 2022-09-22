@@ -16,6 +16,9 @@ class XlsformVersion extends Model
     protected $table = "xlsform_versions";
     protected $guarded = [];
 
+    protected $casts = [
+        'schema' => 'array',
+    ];
 
     // If no title is given, add a default title by combining the owner name and template title.
     public function title(): Attribute

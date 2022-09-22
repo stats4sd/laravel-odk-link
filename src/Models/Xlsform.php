@@ -15,8 +15,12 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use Stats4sd\OdkLink\Exports\OdkSubmissionContentExport;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use App\Models\User;
+use Stats4sd\OdkLink\OdkLink;
+use Stats4sd\OdkLink\Services\OdkLinkService;
 
 class Xlsform extends Model
 {
@@ -29,6 +33,7 @@ class Xlsform extends Model
     public $appends = [
         'title',
         'draft_qr_code_string',
+        'current_version',
     ];
 
     /*
@@ -119,14 +124,15 @@ class Xlsform extends Model
     }
 
 
-    public function getCurrentVersion()
+    public function getCurrentVersionAttribute()
     {
         return $this->xlsformVersions()
             ->where('active', 1)
-            ->sort_by('created_at')
-            ->last()
-            ->version;
+            ->orderBy('created_at')
+            ->get()
+            ->last()?->version ?? null;
     }
+
 
     /*
      * Gets the direct url to the form on the ODK Aggregate Service
@@ -189,9 +195,10 @@ class Xlsform extends Model
 
         $settings = [
             "general" => [
-                "server_url" => config('odk-link.odk.base_endpoint') . "key/{$this->odk_draft_token}/projects/{$this->owner->odkProject->id}",
+                "server_url" => config('odk-link.odk.base_endpoint') . "/test/{$this->odk_draft_token}/projects/{$this->owner->odkProject->id}/forms/{$this->odk_id}/draft",
+                "form_update_mode" => "match_exactly",
             ],
-            "project" => ["name" => "(DRAFT) " . $this->title],
+            "project" => ["name" => "(DRAFT) " . $this->title, "icon" => "📝"],
             "admin" => ["automatic_update" => true],
         ];
 
@@ -199,5 +206,29 @@ class Xlsform extends Model
 
         return base64_encode(zlib_encode($json, ZLIB_ENCODING_DEFLATE));
 
+    }
+
+    public function deployDraft(OdkLinkService $service): void
+    {
+
+        $odkXlsFormDetails = $service->createDraftForm($this);
+
+        $this->updateQuietly([
+            'odk_id' => $odkXlsFormDetails['xmlFormId'],
+            'odk_draft_token' => $odkXlsFormDetails['draftToken'],
+            'odk_version_id' => $odkXlsFormDetails['version'],
+            'has_draft' => true,
+            'enketo_draft_url' => $odkXlsFormDetails['enketoId'],
+        ]);
+    }
+
+    public function deployLive(OdkLinkService $service): void
+    {
+
+    }
+
+    public function exportSubmissionData()
+    {
+        return Excel::download(new OdkSubmissionContentExport($this), 'test.xlsx');
     }
 }
