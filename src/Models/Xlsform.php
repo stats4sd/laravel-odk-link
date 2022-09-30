@@ -46,21 +46,13 @@ class Xlsform extends Model
     {
         parent::booted();
 
-        // order by order;
-        static::addGlobalScope('order', function($builder) {
-            return $builder->orderBy('lft');
-        });
-
         // when the model is created;
         static::saved(function ($xlsform) {
 
             // copy the xlsfile from the template and update the title and id:
             if (!$xlsform->xlsfile) {
                 $xlsform->updateXlsfileFromTemplate();
-                $xlsform->updateOrderingFromTemplate();
             }
-
-
 
             // if the odk_project is not set, set it based on the given owner:
             $xlsform->odk_project_id = $xlsform->owner->odkProject->id;
@@ -189,16 +181,6 @@ class Xlsform extends Model
         $this->xlsfile = $filePath;
         $this->saveQuietly();
         UpdateXlsformTitleInFile::dispatchSync($this);
-    }
-
-    public function updateOrderingFromTemplate(): void
-    {
-        $this->updateQuietly([
-            'parent_id' => $this->xlsformTemplate->parent_id,
-            'lft' => $this->xlsformTemplate->lft,
-            'rgt' => $this->xlsformTemplate->rgt,
-            'depth' => $this->xlsformTemplate->depth,
-        ]);
     }
 
     /**
