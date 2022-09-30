@@ -5,6 +5,7 @@ namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\ReorderOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
@@ -32,6 +33,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class XlsformCrudController extends CrudController
 {
     use ListOperation;
+    use ReorderOperation;
 
     /**
      * @throws Exception
@@ -200,5 +202,14 @@ class XlsformCrudController extends CrudController
         $this->setupListOperation();
 
         $this->crud->query = $this->crud->query->where('owner_id', 29);
+    }
+
+    protected function setupReorderOperation()
+    {
+        // define which model attribute will be shown on draggable elements
+        $this->crud->set('reorder.label', 'title');
+        // define how deep the admin is allowed to nest the items
+        // for infinite levels, set it to 0
+        $this->crud->set('reorder.max_level', 1);
     }
 }
