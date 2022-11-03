@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Str;
 use JsonException;
+use Stats4sd\OdkLink\Jobs\ProcessSubmission;
 use Stats4sd\OdkLink\Models\Submission;
 use Stats4sd\OdkLink\Models\Xlsform;
 

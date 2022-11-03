@@ -21,6 +21,7 @@ use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use App\Models\User;
 use Stats4sd\OdkLink\OdkLink;
 use Stats4sd\OdkLink\Services\OdkLinkService;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class Xlsform extends Model
 {
@@ -227,8 +228,14 @@ class Xlsform extends Model
 
     }
 
-    public function exportSubmissionData()
+    public function exportSubmissionData(): BinaryFileResponse
     {
         return Excel::download(new OdkSubmissionContentExport($this), 'test.xlsx');
+    }
+
+    public function hasDataMap()
+    {
+        // placeholder for when datamaps are added;
+        return false;
     }
 }

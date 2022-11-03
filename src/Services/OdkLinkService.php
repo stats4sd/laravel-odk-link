@@ -15,9 +15,12 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use PHPStan\Parallel\Process;
 use Psr\SimpleCache\InvalidArgumentException;
 use SaintSystems\OData\ODataClient;
 use Stats4sd\OdkLink\Exports\SqlViewExport;
+use Stats4sd\OdkLink\Imports\XlsformImport;
+use Stats4sd\OdkLink\Jobs\ProcessSubmission;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use Stats4sd\OdkLink\Models\AppUser;
 use Stats4sd\OdkLink\Models\OdkProject;
@@ -483,102 +486,18 @@ class OdkLinkService
 
             $xlsformVersion = $xlsform->xlsformVersions()->firstWhere('version', $entry['__system']['formVersion']);
 
-            // GET schema information for the specific version
-            $schema = collect($xlsformVersion->schema);
-
-//            $repeats = $schema->where('type', '=', 'repeat');
-
-            $entryToStore = $this->processEntry($entry, $schema);
-
-            $xlsformVersion?->submissions()->create([
+            // store raw entry on the submission
+            $submission = $xlsformVersion?->submissions()->create([
                 'id' => $entry['__id'],
                 'submitted_at' => (new Carbon($entry['__system']['submissionDate']))->toDateTimeString(),
                 'submitted_by' => $entry['__system']['submitterName'],
                 'uuid' => $entry['__id'],
-                'content' => $entryToStore,
+                'content' => $entry,
             ]);
+
+            ProcessSubmission::dispatchSync($submission);
         }
 
-    }
-
-    public function processEntry($entry, $schema)
-    {
-        foreach ($entry as $key => $value) {
-            // search for structure groups to flatten
-            $schemaEntry = $schema->firstWhere('name', '=', $key);
-
-            if(!$schemaEntry) {
-                continue;
-            }
-            if ($schemaEntry['type'] === 'structure') {
-                $entry = array_merge($this->processEntry($value, $schema), $entry);
-                unset($entry[$key]);
-            }
-
-            if ($schemaEntry['type'] === 'repeat') {
-                $entry[$key] = collect($entry[$key])->map(function ($repeatEntry) use ($schema) {
-                    return $this->processEntry($repeatEntry, $schema);
-                })->toArray();
-            }
-        }
-
-        return $entry;
-    }
-
-    public function processEntryNOPE(array $entryToStore, array $entry, Collection $schema, array $repeatPath = []): array
-    {
-        // get reference to correct nested part of the $entryToStore (e.g. if we are inside a repeat, we will want to add keys/values to the current level in the repeat;
-
-
-        if (count($repeatPath) > 0) {
-            $ref = &$entryToStore;
-            foreach ($repeatPath as $path) {
-
-                // check if there is already a path to here
-                if (!isset($ref[$path])) {
-                    $ref[$path] = [];
-                }
-                $ref = &$ref[$path];
-            }
-            dump($ref, $repeatPath);
-        }
-
-
-        foreach ($entry as $key => $value) {
-            $schemaEntry = $schema->firstWhere('name', '=', $key);
-
-            if (!$schemaEntry) {
-                $ref[$key] = $value;
-                continue;
-            }
-
-            switch ($schemaEntry['type']) {
-                case 'repeat':
-
-                    $repeatPath[] = $key;
-                    $loop = 0;
-
-                    foreach ($value as $repeatItem) {
-                        array_pop($repeatPath);
-                        $repeatPath[] = $loop;
-                        $ref = $this->processEntry($entryToStore, $repeatItem, $schema, $repeatPath);
-
-                        $loop++;
-                    }
-                    break;
-
-                case 'structure':
-                    $ref = $this->processEntry($entryToStore, $value, $schema, $repeatPath);
-                    break;
-
-                default:
-                    $ref[$key] = $value;
-
-                    break;
-            }
-
-        }
-        return $entryToStore;
     }
 }
 

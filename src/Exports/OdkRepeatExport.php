@@ -9,13 +9,10 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Stats4sd\OdkLink\Exports\Traits\HandlesOdkSubmissions;
 use Stats4sd\OdkLink\Models\Xlsform;
 
 class OdkRepeatExport implements FromCollection, WithHeadings, WithTitle
 {
-    use HandlesOdkSubmissions;
-
     public function __construct(public Collection $content, public Collection $keys, public string $repeatName)
     {
     }

@@ -19,25 +19,19 @@ Route::group([
     Route::crud('xlsform-template', XlsformTemplateCrudController::class);
     Route::crud('xlsform', XlsformCrudController::class);
     Route::crud('odk-project', OdkProjectCrudController::class);
-
-//    Route::crud('xlsform-version', XlsformVersionCrudController::class);
     Route::crud('submission', SubmissionCrudController::class);
 
-    // XLS Form Crud controller custom routes;
+
+    // ********** XLSFORM ROUTES ********************** //
     Route::post('xlsform/{xlsform}/deploy-draft', [XlsformCrudController::class, 'deployDraft'])->name('xlsform.deploy-draft');
     Route::post('xlsform/{xlsform}/deploy-live', [XlsformCrudController::class, 'deployLive'])->name('xlsform.deploy-live');
     Route::post('xlsform/{xlsform}/update-xlsfile', [XlsformCrudController::class, 'updateXlsFileFromTemplate'])->name('xlsform.update-xlsfile');
     Route::post('xlsform/{xlsform}/archive', [XlsformCrudController::class, 'archiveForm'])->name('xlsform.archive');
 
+    // ******** ODK FORM SUBMISSION ROUTES *************** //
+    Route::post('submission/{submission}/reprocess', [SubmissionCrudController::class, 'reprocessSubmission']);
 
-//    // XLS Form <--> KoBoToolbox handling
-//    Route::post('teamxlsform/{form}/deploytokobo', [TeamXlsformCrudController::class, 'deployToKobo']);
-//    Route::post('teamxlsform/{form}/syncdata', [TeamXlsformCrudController::class, 'syncData']);
-//    Route::post('teamxlsform/{form}/archive', [TeamXlsformCrudController::class, 'archiveOnKobo']);
-//    Route::post('teamxlsform/{form}/csvgenerate', [TeamXlsformCrudController::class, 'regenerateCsvFileAttachments']);
-//    Route::get('teamxlsform/{form}/downloadsubmissions', [TeamXlsformCrudController::class, 'downloadSubmissions'])->name('team_xlsforms.submissions');
-//
-//    Route::post('submission/{submission}/reprocess', [SubmissionCrudController::class, 'reprocessSubmission']);
+
 
 Route::get('testing/{project}/gen-user', function(\Stats4sd\OdkLink\Models\OdkProject $project, OdkLinkService $odkLinkService){
     $odkLinkService->createProjectUser($project);
