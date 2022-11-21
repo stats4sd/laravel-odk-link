@@ -2,6 +2,10 @@
 
 All notable changes to `laravel-odk-link` will be documented in this file.
 
+## v0.3.2 - Hotfix - 2022-11-21
+
+~
+
 ## v0.3.1 - 2022-11-21
 
 Updates process submission endpoint to require a route name. (Easier / more versatile than a url).
