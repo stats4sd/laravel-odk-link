@@ -55,6 +55,7 @@ return [
         // Your application should have an endpoint that processes the submissions. This should:
         //      - accept a POST request;
         //      - get the submission based on the submission_id in the body of the POST.
+        // The value here must be the NAME of the route to be used.
         'process_endpoint' => env('SUBMISSION_PROCESS_ENDPOINT', null),
     ],
 ];
