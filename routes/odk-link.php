@@ -29,25 +29,4 @@ Route::group([
     Route::post('xlsform/{xlsform}/update-xlsfile', [XlsformCrudController::class, 'updateXlsFileFromTemplate'])->name('xlsform.update-xlsfile');
     Route::post('xlsform/{xlsform}/archive', [XlsformCrudController::class, 'archiveForm'])->name('xlsform.archive');
 
-
-//    // XLS Form <--> KoBoToolbox handling
-//    Route::post('teamxlsform/{form}/deploytokobo', [TeamXlsformCrudController::class, 'deployToKobo']);
-//    Route::post('teamxlsform/{form}/syncdata', [TeamXlsformCrudController::class, 'syncData']);
-//    Route::post('teamxlsform/{form}/archive', [TeamXlsformCrudController::class, 'archiveOnKobo']);
-//    Route::post('teamxlsform/{form}/csvgenerate', [TeamXlsformCrudController::class, 'regenerateCsvFileAttachments']);
-//    Route::get('teamxlsform/{form}/downloadsubmissions', [TeamXlsformCrudController::class, 'downloadSubmissions'])->name('team_xlsforms.submissions');
-//
-//    Route::post('submission/{submission}/reprocess', [SubmissionCrudController::class, 'reprocessSubmission']);
-
-Route::get('testing/{project}/gen-user', function(\Stats4sd\OdkLink\Models\OdkProject $project, OdkLinkService $odkLinkService){
-    $odkLinkService->createProjectUser($project);
-
 });
-
-Route::get('testing/app-users', function(OdkLinkService $odkLinkService) {
-    return $odkLinkService->test();
-});
-
-});
-
-

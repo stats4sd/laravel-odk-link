@@ -15,6 +15,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Str;
 use JsonException;
+use Stats4sd\OdkLink\Jobs\ProcessSubmission;
 use Stats4sd\OdkLink\Models\Submission;
 use Stats4sd\OdkLink\Models\Xlsform;
 
@@ -27,7 +28,6 @@ class SubmissionCrudController extends CrudController
 {
     use ListOperation;
     use ShowOperation;
-    use UpdateOperation;
 
 
     /**
@@ -67,7 +67,7 @@ class SubmissionCrudController extends CrudController
                 return Xlsform::get()->pluck('title', 'id')->toArray();
             })
             ->whenActive(function ($value) {
-                $this->crud->query->whereHas('xlsformTemplate', function ($query) use ($value) {
+                $this->crud->query->whereHas('xlsformVersion', function ($query) use ($value) {
                     $query->where('xlsform_id', $value);
                 });
             });
@@ -136,89 +136,5 @@ class SubmissionCrudController extends CrudController
         $output .= '</table>';
 
         return $output;
-    }
-
-    /**
-     * @throws JsonException
-     */
-    public function setupUpdateOperation(): void
-    {
-        $content = json_decode(CRUD::getCurrentEntry()->content, true, 512, JSON_THROW_ON_ERROR);
-
-        CRUD::setTitle('Edit Submission with ID: ' . $content['_id']);
-
-        CRUD::field('_main_title')->type('custom_html')->value('<div class="alert alert-danger">NOTE: This page is only for administrators! It is intended as a helper while developing the data maps, or to make **very careful** edits. This page should not be accessible by most users, and should ideally never be used on live data.</div>');
-
-        //manually specify variables that cannot be changed:
-        $immutable = [
-            'end',
-            'start',
-            'today',
-            'meta/instanceID',
-            'meta/deprecatedID',
-            'formhub/uuid',
-        ];
-
-        foreach ($content as $key => $value) {
-
-            // TODO: fix hack to quietly ignore arrays / repeat groups...
-            if (is_array($value)) {
-                $value = json_encode($value, JSON_THROW_ON_ERROR);
-            }
-
-
-            // Do not allow immutable variables to be edited;
-            if (in_array($key, $immutable, true) || Str::startsWith($key, '_')) {
-                continue;
-            }
-
-            CRUD::field('_title' . $key)->type('custom_html')->value("<h5>$key</h5>");
-            CRUD::field('_label' . $key)->type('submission_variable')->value((string)$key)->fake(true);
-            CRUD::field($key)->type('submission_value')->value((string)$value)->fake(true);
-            CRUD::field('_end' . $key)->type('custom_html')->value('<hr/>');
-        }
-    }
-
-    /** Totally override default update functionality
-     * TODO: Review submission editing process
-     * @throws JsonException
-     */
-    public function update(): Redirector|Application|RedirectResponse
-    {
-        $submission = CRUD::getCurrentEntry();
-
-        $content = json_decode($submission->content, true, 512, JSON_THROW_ON_ERROR);
-
-        $request = $this->crud->getStrippedSaveRequest();
-
-        foreach ($request as $key => $value) {
-
-            //handle value updates
-            if (!Str::startsWith($key, '_label')) {
-                $content[$key] = $value;
-            }
-        }
-
-        foreach ($request as $key => $value) {
-            //handle variable name updates
-            if (Str::startsWith($key, '_label')) {
-                $key = Str::replaceFirst('_label', '', $key);
-
-                if ($key !== $value) {
-                    $content[$value] = $content[$key];
-                    unset($content[$key]);
-                }
-            }
-        }
-
-        $submission->content = json_encode($content, JSON_THROW_ON_ERROR);
-        $submission->save();
-
-        return redirect(CRUD::getRoute());
-    }
-
-    public function reprocessSubmission(Submission $submission): void
-    {
-        ProcessSubmission::dispatchSync($submission, auth()->user());
     }
 }

@@ -49,4 +49,12 @@ return [
         // the role that a user must have in order to see *all* forms, and not just the ones owned by an entity linked to the user.
         'xlsform-admin' => env('XLSFORM_ADMIN_ROLE', 'admin'),
     ],
+
+    'submission' => [
+
+        // Your application should have an endpoint that processes the submissions. This should:
+        //      - accept a POST request;
+        //      - get the submission based on the submission_id in the body of the POST.
+        'process_endpoint' => env('SUBMISSION_PROCESS_ENDPOINT', null),
+    ],
 ];
