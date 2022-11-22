@@ -25,7 +25,7 @@ trait HasXlsforms
 
         // when the model is created; automatically create an associated project on ODK Central;
         static::created(function ($owner) use ($odkLinkService) {
-            $this->createLinkedOdkProject($odkLinkService, $owner);
+            $owner->createLinkedOdkProject($odkLinkService, $owner);
         });
     }
 
