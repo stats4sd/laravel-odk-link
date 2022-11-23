@@ -67,10 +67,7 @@ TODO: write up full documentation.
 ## Credits
 
 - [David Mills](https://github.com/dave-mills)
-
-#TODO
 - [All Contributors](../../contributors)
 
 ## License
-#TODO
 The MIT Licence (MIT). Please see [Licence File](LICENSE.md) for more information.
