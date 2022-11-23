@@ -91,10 +91,18 @@ class XlsformTemplateCrudController extends CrudController
             [
                 'name' => 'mysql_name',
                 'label' => 'MySQL Table Name',
+                'validationRules' => 'required',
+                'validationMessages' => [
+                    'required' => 'Please add the name of the MySQL view that holds the data for the CSV file.',
+                ]
             ],
             [
                 'name' => 'csv_name',
                 'label' => 'CSV File Name',
+                'validationRules' => 'required',
+                'validationMessages' => [
+                    'required' => 'Please add the name of the CSV file that should be attached to the ODK form.',
+                ]
             ],
             [
                 'name' => 'per_owner',

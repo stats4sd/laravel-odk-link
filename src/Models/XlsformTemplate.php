@@ -31,10 +31,17 @@ class XlsformTemplate extends Model
         $this->uploadFileWithNames($value, 'xlsfile', config('odk-link.storage.xlsforms'), '');
     }
 
+    public function setCsvLookupsAttribute($value): void
+    {
+        // filter out any entries where mysql_name === null and csv_name === null
+        // these are assumed to be unused entries where the user simply did not remove them.
+        $this->attributes['csv_lookups'] = collect($value)->filter(fn($entry) => $entry['mysql_name'] && $entry['csv_name'])->toJson();
+    }
+
     public function setMediaAttribute($value): void
     {
 
-        if(is_array($value)){
+        if (is_array($value)) {
             $value = json_encode($value);
         }
 
@@ -78,11 +85,11 @@ class XlsformTemplate extends Model
     {
         $request = request();
 
-        if(!$request) {
+        if (!$request) {
             return;
         }
 
-        if (! is_array($this->{$attribute_name})) {
+        if (!is_array($this->{$attribute_name})) {
             $attribute_value = json_decode($this->{$attribute_name}, true) ?? [];
         } else {
             $attribute_value = $this->{$attribute_name};
@@ -116,4 +123,6 @@ class XlsformTemplate extends Model
 
         $this->attributes[$attribute_name] = json_encode($attribute_value);
     }
+
+
 }
