@@ -83,22 +83,6 @@ class XlsformCrudController extends CrudController
                 return $entry->getOdkLink();
             },
         ]);
-
-        // TEMP
-        $qrCodeString = Auth::user()?->odkProject->appUsers->first()?->qr_code_string ?? '';
-
-        $introText = "This page shows all Xlsforms that you have access to. Click the + symbol to show more options for a specific form.";
-
-        if (Auth::check() && !Auth::user()?->hasRole(config('odk-link.roles.xlsform-admin'))) {
-            $introText = "This page shows all xlsforms on the entire site, organised by owner. Click the + symbol to show more options for a specific form.";
-        }
-
-        Widget::add()
-            ->type('card')
-            ->content([
-                'header' => 'XLS Forms',
-                'body' => $introText,
-            ]);
     }
 
     /**
