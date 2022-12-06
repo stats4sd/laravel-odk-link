@@ -91,7 +91,7 @@ class XlsformCrudController extends CrudController
     public function deployDraft(Xlsform $xlsform, OdkLinkService $odkLinkService): Response
     {
 
-        $xlsform->deployDradeployDraftft($odkLinkService);
+        $xlsform->deployDraft($odkLinkService);
         return response("Successfully created draft form on ODK Central");
     }
 
