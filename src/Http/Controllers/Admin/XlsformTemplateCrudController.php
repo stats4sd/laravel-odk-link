@@ -3,16 +3,18 @@
 
 namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
-use Backpack\CRUD\app\Http\Controllers\CrudController;
-use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
-use Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
-use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
-use Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
-use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
-use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
-use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Illuminate\Support\Facades\Storage;
 use Stats4sd\OdkLink\Models\XlsformTemplate;
+use Stats4sd\OdkLink\Imports\XlsformSurveyImport;
+use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
+use Backpack\CRUD\app\Http\Controllers\CrudController;
+use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
+use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
+use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
+use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * Class XlsformCrudController
@@ -58,6 +60,10 @@ class XlsformTemplateCrudController extends CrudController
             'csv_name' => 'CSV File Name',
         ]);
         CRUD::column('available')->type('boolean')->label('Is the form available for live use?');
+
+        // add select ODK variables button
+        // P.S. Uncomment this line will lead to error
+        // $this->crud->addButtonFromView('line', 'select', 'select', 'end');
     }
 
     /**
@@ -158,6 +164,27 @@ class XlsformTemplateCrudController extends CrudController
             ->type('upload')
             ->upload(true)
         ->validationRules('nullable');
+
+
+        // TOOD: move below code segment to select() function
+
+        // get current entry
+        $entry = $this->crud->getCurrentEntry();
+
+        // read excel files into an array of excel sheets
+        $sheets = Excel::toArray(new XlsformSurveyImport, $entry->xlsfile);
+
+        // get the first excel data sheet, as it is always the survey template
+        $sheet1 = $sheets[0];
+
+        // TODO: add the first excel data sheet before returning to view
+
+        // TODO: to be used in blade view level, 
+        // extract ODK variable type, variable name, label for each row
+        foreach ($sheet1 as $row) {
+            $valueArray = array_values($row);
+            dump($valueArray[0] . ', ' . $valueArray[1] . ', ' . $valueArray[2]);
+        }
     }
 
     public function setupShowOperation(): void
@@ -165,5 +192,16 @@ class XlsformTemplateCrudController extends CrudController
         $this->crud->set('show.setFromDb', false);
 
         $this->setupListOperation();
+    }
+
+
+    // Select button, divert to a fully customized blade view file
+    public function select()
+    {
+        logger("XlsformTemplateCrudController.select() starts...");
+
+        $entry = CRUD::getCurrentEntry();
+
+        return view('xlsformtemplate.select-odk-variables', ['entry' => $entry]);
     }
 }

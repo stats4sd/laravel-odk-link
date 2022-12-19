@@ -73,7 +73,7 @@ class Xlsform extends Model
                         $query->where('users.id', Auth::id());
                     } else {
                         // is the xlsform owned by a team/group other entity that the logged in user is linked to?
-                        $query->whereHas('users', function ($query) {
+                        $query->whereHas('members', function ($query) {
                             $query->where('users.id', Auth::id());
                         });
                     }
