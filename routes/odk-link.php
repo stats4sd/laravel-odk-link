@@ -17,6 +17,10 @@ Route::group([
 ], function () {
 
     Route::crud('xlsform-template', XlsformTemplateCrudController::class);
+
+    // Add a new route for XlsForm Template CRUD list view "Select" button
+    Route::get('xlsform-template/{id}/select', [XlsformTemplateCrudController::class, 'select']);
+
     Route::crud('xlsform', XlsformCrudController::class);
     Route::crud('odk-project', OdkProjectCrudController::class);
 
