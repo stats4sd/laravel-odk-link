@@ -28,5 +28,5 @@ Route::group([
     Route::post('xlsform/{xlsform}/deploy-live', [XlsformCrudController::class, 'deployLive'])->name('xlsform.deploy-live');
     Route::post('xlsform/{xlsform}/update-xlsfile', [XlsformCrudController::class, 'updateXlsFileFromTemplate'])->name('xlsform.update-xlsfile');
     Route::post('xlsform/{xlsform}/archive', [XlsformCrudController::class, 'archiveForm'])->name('xlsform.archive');
-
+    Route::post('xlsform/{xlsform}/get-submissions', [XlsformCrudController::class, 'getSubmissions'])->name('xlsform.get-submissions');
 });

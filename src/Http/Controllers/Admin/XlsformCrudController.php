@@ -114,6 +114,11 @@ class XlsformCrudController extends CrudController
 
     }
 
+    public function getSubmissions(OdkLinkService $odkLinkService, Xlsform $xlsform)
+    {
+        $odkLinkService->getSubmissions($xlsform);
+    }
+
     public function archiveForm(Xlsform $xlsform, OdkLinkService $odkLinkService): Response
     {
         if (!xlsform->is_active) {
