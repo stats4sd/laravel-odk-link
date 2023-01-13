@@ -137,4 +137,29 @@ class SubmissionCrudController extends CrudController
 
         return $output;
     }
+
+    public function reprocess(Submission $submission)
+    {
+
+        // if a process class and method are not defined within the app, do nothing
+        if (!config('odk-link.submission.process_method.class') && !config('odk-link.submission.process_method.method')) {
+
+            \Alert::add('danger', 'No process_method or class has been defined for submissions. Please check your odk-link config or enviroment file')->flash();
+            return redirect()->back();
+        }
+
+        // delete any database entries created from the previous processing attempts:
+        foreach ($submission->entries as $model => $ids) {
+            $model::destory($ids);
+        }
+
+        // remove any validation error messages from previous processing attempts:
+        $submission->errors = null;
+
+
+        $class = config('odk-link.submission.process_method.class');
+        $method = config('odk-link.submission.process_method.method');
+
+        $class::$method($submission);
+    }
 }

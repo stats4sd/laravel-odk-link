@@ -23,6 +23,8 @@ Route::group([
 //    Route::crud('xlsform-version', XlsformVersionCrudController::class);
     Route::crud('submission', SubmissionCrudController::class);
 
+    Route::post('submission/{submission}/reprocess', [SubmissionCrudController::class, 'reprocess']);
+
     // XLS Form Crud controller custom routes;
     Route::post('xlsform/{xlsform}/deploy-draft', [XlsformCrudController::class, 'deployDraft'])->name('xlsform.deploy-draft');
     Route::post('xlsform/{xlsform}/deploy-live', [XlsformCrudController::class, 'deployLive'])->name('xlsform.deploy-live');
