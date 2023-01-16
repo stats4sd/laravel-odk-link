@@ -149,8 +149,10 @@ class SubmissionCrudController extends CrudController
         }
 
         // delete any database entries created from the previous processing attempts:
-        foreach ($submission->entries as $model => $ids) {
-            $model::destory($ids);
+        if (isset($submission->entries)) {
+            foreach ($submission->entries as $model => $ids) {
+                $model::destroy($ids);
+            }
         }
 
         // remove any validation error messages from previous processing attempts:
