@@ -485,16 +485,16 @@ class OdkLinkService
 
             // GET schema information for the specific version
             // TODO: hook this into the select variables work from the other branch...
-            //$schema = collect($xlsformVersion->schema);
+            $schema = collect($xlsformVersion->schema);
 
-            //$entryToStore = $this->processEntry($entry, $schema);
+            $entryToStore = $this->processEntry($entry, $schema);
 
             $submission = $xlsformVersion?->submissions()->create([
                 'id' => $entry['__id'],
                 'submitted_at' => (new Carbon($entry['__system']['submissionDate']))->toDateTimeString(),
                 'submitted_by' => $entry['__system']['submitterName'],
                 'uuid' => $entry['__id'],
-                'content' => $entry,
+                'content' => $entryToStore,
             ]);
 
             // if app developer has defined a method of processing submission content, call that method:
@@ -510,29 +510,29 @@ class OdkLinkService
     }
 
     // WIP
-//    public function processEntry($entry, $schema)
-//    {
-//        foreach ($entry as $key => $value) {
-//            // search for structure groups to flatten
-//            $schemaEntry = $schema->firstWhere('name', '=', $key);
-//
-//            if(!$schemaEntry) {
-//                continue;
-//            }
-//            if ($schemaEntry['type'] === 'structure') {
-//                $entry = array_merge($this->processEntry($value, $schema), $entry);
-//                unset($entry[$key]);
-//            }
-//
-//            if ($schemaEntry['type'] === 'repeat') {
-//                $entry[$key] = collect($entry[$key])->map(function ($repeatEntry) use ($schema) {
-//                    return $this->processEntry($repeatEntry, $schema);
-//                })->toArray();
-//            }
-//        }
-//
-//        return $entry;
-//    }
+   public function processEntry($entry, $schema)
+   {
+       foreach ($entry as $key => $value) {
+           // search for structure groups to flatten
+           $schemaEntry = $schema->firstWhere('name', '=', $key);
+
+           if(!$schemaEntry) {
+               continue;
+           }
+           if ($schemaEntry['type'] === 'structure') {
+               $entry = array_merge($this->processEntry($value, $schema), $entry);
+               unset($entry[$key]);
+           }
+
+           if ($schemaEntry['type'] === 'repeat') {
+               $entry[$key] = collect($entry[$key])->map(function ($repeatEntry) use ($schema) {
+                   return $this->processEntry($repeatEntry, $schema);
+               })->toArray();
+           }
+       }
+
+       return $entry;
+   }
 //
 //    public function processEntryNOPE(array $entryToStore, array $entry, Collection $schema, array $repeatPath = []): array
 //    {
