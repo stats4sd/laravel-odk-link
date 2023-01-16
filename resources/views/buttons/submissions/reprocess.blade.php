@@ -1,4 +1,4 @@
-@if ($crud->hasAccess('show') && config('odk-link.submission.process_endpoint'))
+@if ($crud->hasAccess('show') && config('odk-link.submission.process_method.method'))
     <br/>
 	<a href="javascript:void(0)" onclick="reprocessEntry(this)" data-route="{{ route(config('odk-link.submission.process_endpoint')) }}" data-submission-id="{{ $entry->id }}" class="btn btn-sm btn-link" data-button-type="edit"><i class="la la-edit"></i> Reprocess Submission</a>
 @endif
