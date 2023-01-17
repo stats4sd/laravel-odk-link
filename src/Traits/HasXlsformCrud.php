@@ -13,8 +13,7 @@ trait HasXlsformCrud
                 return config('odk-link.odk.url')."/#/projects/".$entry->odkProject->id;
             }
         ]);
-        CRUD::column('count_xlsforms');
-
+        CRUD::column('xlsforms')->type('relationship_count')->suffix('');
 
     }
 
