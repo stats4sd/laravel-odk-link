@@ -41,8 +41,8 @@ return [
     ],
 
     'storage' => [
-        'xlsforms' => config('filesystem.default', 'local'),
-        'media' => config('filesystem.default', 'local'),
+        'xlsforms' => config('filesystem.default', 'public'),
+        'media' => config('filesystem.default', 'public'),
     ],
 
     'roles' => [
