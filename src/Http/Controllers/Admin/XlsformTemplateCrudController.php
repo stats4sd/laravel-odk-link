@@ -3,16 +3,17 @@
 
 namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
-use Backpack\CRUD\app\Http\Controllers\CrudController;
-use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
-use Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
-use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
-use Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
-use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
-use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
-use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
+use config;
 use Illuminate\Support\Facades\Storage;
 use Stats4sd\OdkLink\Models\XlsformTemplate;
+use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
+use Backpack\CRUD\app\Http\Controllers\CrudController;
+use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
+use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
+use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
+use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
 
 /**
  * Class XlsformCrudController
@@ -46,13 +47,13 @@ class XlsformTemplateCrudController extends CrudController
         CRUD::column('xlsfile')->type('upload')->wrapper([
             'href' => function ($crud, $column, $entry) {
                 if ($entry->xlsfile) {
-                    return Storage::disk(config('kobo-link.xlsforms.storage_disk'))->url($entry->xlsfile);
+                    return Storage::disk(config('odk-link.storage.xlsforms'))->url($entry->xlsfile);
                 }
 
                 return '#';
             },
         ]);
-        CRUD::column('media')->type('upload_multiple')->disk(config('kobo-link.xlsforms.storage_disk'));
+        CRUD::column('media')->type('upload_multiple')->disk(config('odk-link.storage.xlsforms'));
         CRUD::column('csv_lookups')->type('table')->columns([
             'mysql_name' => 'MySQL Table/View',
             'csv_name' => 'CSV File Name',
@@ -69,7 +70,7 @@ class XlsformTemplateCrudController extends CrudController
     protected function setupCreateOperation(): void
     {
         CRUD::field('title')
-        ->validationRules('required|max:255');
+            ->validationRules('required|max:255');
 
         CRUD::field('xlsfile')
             ->type('upload')
@@ -157,7 +158,7 @@ class XlsformTemplateCrudController extends CrudController
             ->after('title')
             ->type('upload')
             ->upload(true)
-        ->validationRules('nullable');
+            ->validationRules('nullable');
     }
 
     public function setupShowOperation(): void

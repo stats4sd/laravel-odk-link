@@ -57,8 +57,8 @@ class SubmissionCrudController extends CrudController
         CRUD::column('id')->label('Submission ID');
         CRUD::column('submitted_at')->type('datetime')->format('YYYY-MM-DD HH:mm:ss');
         CRUD::column('processed')->label('Processed?')->type('boolean');
-        CRUD::column('errors')->label('Validation errors')->type('submission_errors')->view_namespace('kobo-link::crud.columns')->limit(1000);
-        CRUD::column('entries')->label('Db Entries created')->type('submission_entries')->view_namespace('kobo-link::crud.columns')->limit(1000);
+        CRUD::column('errors')->label('Validation Errors')->type('submission_errors')->view_namespace('odk-link::columns')->limit(1000);
+        CRUD::column('entries')->label('Db Entries Created')->type('submission_entries')->view_namespace('odk-link::columns')->limit(1000);
 
         CRUD::filter('xlsform')
             ->type('select2')
@@ -92,17 +92,20 @@ class SubmissionCrudController extends CrudController
     {
         $this->setupListOperation();
 
-        CRUD::column('content')->type('custom_html')->value(/**
-         * @throws JsonException
-         */ function ($entry) {
-            if (!is_array($entry->content)) {
-                $content = json_decode($entry->content, true, 512, JSON_THROW_ON_ERROR);
-            } else {
-                $content = $entry->content;
-            }
+        CRUD::column('content')->type('custom_html')->value(
+            /**
+             * @throws JsonException
+             */
+            function ($entry) {
+                if (!is_array($entry->content)) {
+                    $content = json_decode($entry->content, true, 512, JSON_THROW_ON_ERROR);
+                } else {
+                    $content = $entry->content;
+                }
 
-            return $this->createContentTable($content);
-        });
+                return $this->createContentTable($content);
+            }
+        );
     }
 
     public function createContentTable($array)
@@ -121,7 +124,6 @@ class SubmissionCrudController extends CrudController
                     $value = json_encode($value);
                 } else {
                     $value = $this->createContentTable($value);
-
                 }
             }
 
