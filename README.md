@@ -55,8 +55,9 @@ ODK_PASSWORD="your-password"
 # the FQDN of the PHP class in your application that holds the functions that process data 
 DATA_PROCESSING_CLASS="\\App\\Services\\DatamapService"
 
-# the name of the route that submission data should be POSTED to when ODK submissions are retrieved.
-SUBMISSION_PROCESS_ENDPOINT="name.of.route"
+# the class and method for retrieving ODK submissions
+SUBMISSION_PROCESS_CLASS="\\App\\Http\\Controllers\\SubmissionController"
+SUBMISSION_PROCESS_METHOD="process"
 ```
 
 ## Use
