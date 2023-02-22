@@ -2,18 +2,15 @@
 
 namespace src\View\Components;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\View\Component;
 
 class Qr extends Component
 {
-    /**
-     * Create a new component instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    // $entry should be a model that uses the "HasXlsForms" trait
+    public function __construct(Public Model $entry)
     {
-        //
+
     }
 
     /**
