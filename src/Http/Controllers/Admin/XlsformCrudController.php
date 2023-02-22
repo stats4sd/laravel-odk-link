@@ -83,22 +83,6 @@ class XlsformCrudController extends CrudController
                 return $entry->getOdkLink();
             },
         ]);
-
-        // TEMP
-        $qrCodeString = Auth::user()?->odkProject->appUsers->first()?->qr_code_string ?? '';
-
-        $introText = "This page shows all Xlsforms that you have access to. Click the + symbol to show more options for a specific form.";
-
-        if (Auth::check() && !Auth::user()?->hasRole(config('odk-link.roles.xlsform-admin'))) {
-            $introText = "This page shows all xlsforms on the entire site, organised by owner. Click the + symbol to show more options for a specific form.";
-        }
-
-        Widget::add()
-            ->type('card')
-            ->content([
-                'header' => 'XLS Forms',
-                'body' => $introText,
-            ]);
     }
 
     /**
@@ -107,7 +91,7 @@ class XlsformCrudController extends CrudController
     public function deployDraft(Xlsform $xlsform, OdkLinkService $odkLinkService): Response
     {
 
-        $xlsform->deployDradeployDraftft($odkLinkService);
+        $xlsform->deployDraft($odkLinkService);
         return response("Successfully created draft form on ODK Central");
     }
 
@@ -128,6 +112,11 @@ class XlsformCrudController extends CrudController
             "message" => "Successfully published form on ODK Central"
         ]);
 
+    }
+
+    public function getSubmissions(OdkLinkService $odkLinkService, Xlsform $xlsform)
+    {
+        $odkLinkService->getSubmissions($xlsform);
     }
 
     public function archiveForm(Xlsform $xlsform, OdkLinkService $odkLinkService): Response

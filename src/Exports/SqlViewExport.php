@@ -5,8 +5,9 @@ namespace Stats4sd\OdkLink\Exports;
 
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 
-class SqlViewExport implements \Maatwebsite\Excel\Concerns\FromCollection, WithHeadings
+class SqlViewExport implements \Maatwebsite\Excel\Concerns\FromCollection, WithHeadings, WithStrictNullComparison
 {
     public function __construct(public string $viewName, public mixed $owner = null, public ?string $ownerForeignKey = null)
     {

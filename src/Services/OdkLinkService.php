@@ -484,101 +484,111 @@ class OdkLinkService
             $xlsformVersion = $xlsform->xlsformVersions()->firstWhere('version', $entry['__system']['formVersion']);
 
             // GET schema information for the specific version
+            // TODO: hook this into the select variables work from the other branch...
             $schema = collect($xlsformVersion->schema);
-
-//            $repeats = $schema->where('type', '=', 'repeat');
 
             $entryToStore = $this->processEntry($entry, $schema);
 
-            $xlsformVersion?->submissions()->create([
+            $submission = $xlsformVersion?->submissions()->create([
                 'id' => $entry['__id'],
                 'submitted_at' => (new Carbon($entry['__system']['submissionDate']))->toDateTimeString(),
                 'submitted_by' => $entry['__system']['submitterName'],
                 'uuid' => $entry['__id'],
                 'content' => $entryToStore,
             ]);
+
+            // if app developer has defined a method of processing submission content, call that method:
+            $class = config('odk-link.submission.process_method.class');
+            $method = config('odk-link.submission.process_method.method');
+
+            if($class && $method) {
+                $class::$method($submission);
+            }
+
         }
 
     }
 
-    public function processEntry($entry, $schema)
-    {
-        foreach ($entry as $key => $value) {
-            // search for structure groups to flatten
-            $schemaEntry = $schema->firstWhere('name', '=', $key);
+    // WIP
+   public function processEntry($entry, $schema)
+   {
+       foreach ($entry as $key => $value) {
+           // search for structure groups to flatten
+           $schemaEntry = $schema->firstWhere('name', '=', $key);
 
-            if(!$schemaEntry) {
-                continue;
-            }
-            if ($schemaEntry['type'] === 'structure') {
-                $entry = array_merge($this->processEntry($value, $schema), $entry);
-                unset($entry[$key]);
-            }
+           if(!$schemaEntry) {
+               continue;
+           }
+           if ($schemaEntry['type'] === 'structure') {
+               $entry = array_merge($this->processEntry($value, $schema), $entry);
+               unset($entry[$key]);
+           }
 
-            if ($schemaEntry['type'] === 'repeat') {
-                $entry[$key] = collect($entry[$key])->map(function ($repeatEntry) use ($schema) {
-                    return $this->processEntry($repeatEntry, $schema);
-                })->toArray();
-            }
-        }
+           if ($schemaEntry['type'] === 'repeat') {
+               $entry[$key] = collect($entry[$key])->map(function ($repeatEntry) use ($schema) {
+                   return $this->processEntry($repeatEntry, $schema);
+               })->toArray();
+           }
+       }
 
-        return $entry;
-    }
+       return $entry;
+   }
+//
+//    public function processEntryNOPE(array $entryToStore, array $entry, Collection $schema, array $repeatPath = []): array
+//    {
+//        // get reference to correct nested part of the $entryToStore (e.g. if we are inside a repeat, we will want to add keys/values to the current level in the repeat;
+//
+//
+//        if (count($repeatPath) > 0) {
+//            $ref = &$entryToStore;
+//            foreach ($repeatPath as $path) {
+//
+//                // check if there is already a path to here
+//                if (!isset($ref[$path])) {
+//                    $ref[$path] = [];
+//                }
+//                $ref = &$ref[$path];
+//            }
+//            dump($ref, $repeatPath);
+//        }
+//
+//
+//        foreach ($entry as $key => $value) {
+//            $schemaEntry = $schema->firstWhere('name', '=', $key);
+//
+//            if (!$schemaEntry) {
+//                $ref[$key] = $value;
+//                continue;
+//            }
+//
+//            switch ($schemaEntry['type']) {
+//                case 'repeat':
+//
+//                    $repeatPath[] = $key;
+//                    $loop = 0;
+//
+//                    foreach ($value as $repeatItem) {
+//                        array_pop($repeatPath);
+//                        $repeatPath[] = $loop;
+//                        $ref = $this->processEntry($entryToStore, $repeatItem, $schema, $repeatPath);
+//
+//                        $loop++;
+//                    }
+//                    break;
+//
+//                case 'structure':
+//                    $ref = $this->processEntry($entryToStore, $value, $schema, $repeatPath);
+//                    break;
+//
+//                default:
+//                    $ref[$key] = $value;
+//
+//                    break;
+//            }
+//
+//        }
+//        return $entryToStore;
+//    }
 
-    public function processEntryNOPE(array $entryToStore, array $entry, Collection $schema, array $repeatPath = []): array
-    {
-        // get reference to correct nested part of the $entryToStore (e.g. if we are inside a repeat, we will want to add keys/values to the current level in the repeat;
-
-
-        if (count($repeatPath) > 0) {
-            $ref = &$entryToStore;
-            foreach ($repeatPath as $path) {
-
-                // check if there is already a path to here
-                if (!isset($ref[$path])) {
-                    $ref[$path] = [];
-                }
-                $ref = &$ref[$path];
-            }
-            dump($ref, $repeatPath);
-        }
-
-
-        foreach ($entry as $key => $value) {
-            $schemaEntry = $schema->firstWhere('name', '=', $key);
-
-            if (!$schemaEntry) {
-                $ref[$key] = $value;
-                continue;
-            }
-
-            switch ($schemaEntry['type']) {
-                case 'repeat':
-
-                    $repeatPath[] = $key;
-                    $loop = 0;
-
-                    foreach ($value as $repeatItem) {
-                        array_pop($repeatPath);
-                        $repeatPath[] = $loop;
-                        $ref = $this->processEntry($entryToStore, $repeatItem, $schema, $repeatPath);
-
-                        $loop++;
-                    }
-                    break;
-
-                case 'structure':
-                    $ref = $this->processEntry($entryToStore, $value, $schema, $repeatPath);
-                    break;
-
-                default:
-                    $ref[$key] = $value;
-
-                    break;
-            }
-
-        }
-        return $entryToStore;
-    }
 }
 

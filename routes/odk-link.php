@@ -23,10 +23,12 @@ Route::group([
 //    Route::crud('xlsform-version', XlsformVersionCrudController::class);
     Route::crud('submission', SubmissionCrudController::class);
 
+    Route::post('submission/{submission}/reprocess', [SubmissionCrudController::class, 'reprocess'])->name('submission.reprocess');
+
     // XLS Form Crud controller custom routes;
     Route::post('xlsform/{xlsform}/deploy-draft', [XlsformCrudController::class, 'deployDraft'])->name('xlsform.deploy-draft');
     Route::post('xlsform/{xlsform}/deploy-live', [XlsformCrudController::class, 'deployLive'])->name('xlsform.deploy-live');
     Route::post('xlsform/{xlsform}/update-xlsfile', [XlsformCrudController::class, 'updateXlsFileFromTemplate'])->name('xlsform.update-xlsfile');
     Route::post('xlsform/{xlsform}/archive', [XlsformCrudController::class, 'archiveForm'])->name('xlsform.archive');
-
+    Route::post('xlsform/{xlsform}/get-submissions', [XlsformCrudController::class, 'getSubmissions'])->name('xlsform.get-submissions');
 });

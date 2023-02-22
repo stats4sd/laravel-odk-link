@@ -123,7 +123,7 @@ class GenerateSubmissionRecords extends Command
         //            'survey' => Collection of rows;
         //            'choices' => Collection of rows;
         //        ]
-        $collection = Excel::toCollection(new XlsformImport, Storage::disk(config('kobo-link.xlsforms.storage_disk'))->path($this->xlsformVersion->xlsfile));
+        $collection = Excel::toCollection(new XlsformImport, Storage::disk(config('odk-link.storage.xlsforms'))->path($this->xlsformVersion->xlsfile));
 
         $variables = collect([]);
 
@@ -140,7 +140,6 @@ class GenerateSubmissionRecords extends Command
                 // 'relevant' => $variable['relevant'],
                 // 'constraint' => $variable['constraint'],
             ]);
-
         }
 
         // get choice lists
@@ -155,7 +154,7 @@ class GenerateSubmissionRecords extends Command
         $entry = $generator->processVariablesSequentially();
 
         // add 'odk' metadata
-        if(Submission::count() > 0) {
+        if (Submission::count() > 0) {
             $submissionIdMax = Submission::orderBy('id', 'desc')->take(1)->get()->first()->id;
         } else {
             $submissionIdMax = 0;
@@ -195,5 +194,4 @@ class GenerateSubmissionRecords extends Command
     {
         return Container::getInstance()->make(Generator::class);
     }
-
 }
