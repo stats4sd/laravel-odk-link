@@ -70,7 +70,7 @@ class XlsformCrudController extends CrudController
         CRUD::column('xlsfile')->type('upload')->disk(config('odk-link.storage.xlsforms'))->wrapper([
             'href' => function ($crud, $column, $entry) {
                 if ($entry->xlsfile) {
-                    return Storage::disk(config('odk-link.xlsforms.storage_disk'))->url($entry->xlsfile);
+                    return Storage::disk(config('odk-link.storage.xlsforms'))->url($entry->xlsfile);
                 }
 
                 return '#';
@@ -112,6 +112,11 @@ class XlsformCrudController extends CrudController
             "message" => "Successfully published form on ODK Central"
         ]);
 
+    }
+
+    public function getSubmissions(OdkLinkService $odkLinkService, Xlsform $xlsform)
+    {
+        $odkLinkService->getSubmissions($xlsform);
     }
 
     public function archiveForm(Xlsform $xlsform, OdkLinkService $odkLinkService): Response

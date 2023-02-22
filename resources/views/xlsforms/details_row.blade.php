@@ -36,6 +36,15 @@
                 <hr/>
                 <div class="row">
                     <div class="col-md-6 col-lg-4">
+                        @include('odk-link::buttons.xlsform-pull-submissions')
+                    </div>
+                    <div class="col-md-6 col-lg-8 text-wrap">
+                        Check for new submissions.
+                    </div>
+                </div>
+                <hr/>
+                <div class="row">
+                    <div class="col-md-6 col-lg-4">
                         @include('odk-link::buttons.xlsform-archive')
                     </div>
                     <div class="col-md-6 col-lg-8 text-wrap">

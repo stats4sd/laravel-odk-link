@@ -52,12 +52,13 @@ ODK_USERNAME="an-admin-user-account"
 ODK_PASSWORD="your-password"
 
 ### OPTIONAL
-# the FQDN of the PHP class in your application that holds the functions that process data 
-DATA_PROCESSING_CLASS="\\App\\Services\\DatamapService"
+# the FQDN of the PHP class in your application that is used to process an ODK submission 
+SUBMISSION_PROCESS_CLASS="\\App\\Http\\Controllers\\SubmissionController"
 
-# the name of the route that submission data should be POSTED to when ODK submissions are retrieved.
-SUBMISSION_PROCESS_ENDPOINT="name.of.route"
-```
+# the method within the class. This method should:
+# - be a public static function
+# - accept an OdkLink\Models\Submission object as the only required variable
+SUBMISSION_PROCESS_METHOD="process"
 
 ## Use
 TODO: write up full documentation.
