@@ -3,9 +3,11 @@
 
 namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
-use config;
+use Illuminate\Support\Arr;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Stats4sd\OdkLink\Models\XlsformTemplate;
+use Stats4sd\OdkLink\Imports\XlsformImport;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
@@ -14,6 +16,7 @@ use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
+use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * Class XlsformCrudController
@@ -59,6 +62,11 @@ class XlsformTemplateCrudController extends CrudController
             'csv_name' => 'CSV File Name',
         ]);
         CRUD::column('available')->type('boolean')->label('Is the form available for live use?');
+
+        // add the "Select" button for "Select ODK Variables"
+        Crud::button('select')
+            ->stack('line')
+            ->view('odk-link::buttons.select');
     }
 
     /**
@@ -167,4 +175,52 @@ class XlsformTemplateCrudController extends CrudController
 
         $this->setupListOperation();
     }
+
+    // Select button, divert to a fully customized blade view file
+    public function select()
+    {
+        $entry = CRUD::getCurrentEntry();
+
+        // read excel files into an array of excel sheets
+        $sheets = Excel::toArray(new XlsformImport, $entry->xlsfile);
+
+        // get the "survey" excel data sheet, which is the survey template
+        $surveySheet = $sheets['survey'];
+
+        // convert selected fields from CSV to array
+        $selectedFields = str_getcsv($entry->selected_fields);
+
+        return view('odk-link::xlsformtemplate.select-odk-variables', 
+                    [
+                        'entry' => $entry,
+                        'surveySheet' => $surveySheet,
+                        'selectedFields' => $selectedFields,
+                    ]
+                );
+    }
+
+    // handle the form submission for user selected ODK variables
+    public function submitSelectedFields(Request $request)
+    {
+        // get all form data from POST request
+        $data = $request->all();
+
+        // remove form data "_token", remaining items are user selected fields
+        unset($data['_token']);
+
+        // divide array into keys array and values array
+        list($keys, $values) = Arr::divide($data);
+
+        // convert values array to a CSV string
+        $selectedFields = implode(",", $values);
+
+        // store CSV in database column
+        $entry = CRUD::getCurrentEntry();
+        $entry->selected_fields = $selectedFields;
+        $entry->save();
+
+        // divert to CRUD panel list view
+        return redirect('/admin/xlsform-template');
+    }
+
 }
