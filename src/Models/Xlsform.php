@@ -15,12 +15,14 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use JsonException;
 use Maatwebsite\Excel\Facades\Excel;
 use Stats4sd\OdkLink\Exports\OdkSubmissionContentExport;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use App\Models\User;
 use Stats4sd\OdkLink\OdkLink;
 use Stats4sd\OdkLink\Services\OdkLinkService;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class Xlsform extends Model
 {
@@ -62,7 +64,7 @@ class Xlsform extends Model
 
     }
 
-    public function scopeOwned($builder)
+    public function scopeOwned($builder): void
     {
         if (Auth::check()) {
             $builder->where(function ($query) {
@@ -124,7 +126,7 @@ class Xlsform extends Model
     }
 
 
-    public function getCurrentVersionAttribute()
+    public function getCurrentVersionAttribute(): ?string
     {
         return $this->xlsformVersions()
             ->where('active', 1)
@@ -185,7 +187,7 @@ class Xlsform extends Model
 
     /**
      * Method to retrieve the encoded settings for the current draft version on ODK Central
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getDraftQrCodeStringAttribute(): ?string
     {
@@ -227,7 +229,7 @@ class Xlsform extends Model
 
     }
 
-    public function exportSubmissionData()
+    public function exportSubmissionData(): BinaryFileResponse
     {
         return Excel::download(new OdkSubmissionContentExport($this), 'test.xlsx');
     }
