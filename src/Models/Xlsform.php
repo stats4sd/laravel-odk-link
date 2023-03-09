@@ -61,27 +61,26 @@ class Xlsform extends Model
             $xlsform->saveQuietly();
         });
 
-
-    }
-
-    public function scopeOwned($builder): void
-    {
-        if (Auth::check()) {
-            $builder->where(function ($query) {
-                $query->whereHas('owner', function (Builder $query) {
-
-                    // is the xlsform owned by the logged in user?
-                    if (is_a($query->getModel(), User::class)) {
-                        $query->where('users.id', Auth::id());
-                    } else {
-                        // is the xlsform owned by a team/group other entity that the logged in user is linked to?
-                        $query->whereHas('members', function ($query) {
+        // apply a global scope so that only admins (users with the role defined in the config) can view all xlsforms.
+        // all other users can only see forms they own, or that are owned by an entity they are linked to. (E.g. a team, group).
+        static::addGlobalScope('owned', function (Builder $query) {
+            if (Auth::check() && !Auth::user()?->hasRole(config('odk-link.roles.xlsform-admin'))) {
+                $query->where(function ($query) {
+                    $query->whereHas('owner', function (Builder $query) {
+                        // is the xlsform owned by the logged in user?
+                        if (is_a($query->getModel(), User::class)) {
                             $query->where('users.id', Auth::id());
-                        });
-                    }
+                        } else {
+                            // is the xlsform owned by a team/group other entity that the logged-in user is linked to?
+                            $query->whereHas('members', function ($query) {
+                                $query->where('users.id', Auth::id());
+                            });
+                        }
+                    });
                 });
-            });
-        }
+            }
+        });
+
     }
 
     // If no title is given, add a default title by combining the owner name and template title.
