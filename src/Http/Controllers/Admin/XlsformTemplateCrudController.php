@@ -5,9 +5,11 @@ namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
-use Stats4sd\OdkLink\Models\XlsformTemplate;
 use Stats4sd\OdkLink\Imports\XlsformImport;
+use Stats4sd\OdkLink\Models\XlsformSubject;
+use Stats4sd\OdkLink\Models\XlsformTemplate;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
@@ -16,7 +18,6 @@ use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
-use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * Class XlsformCrudController
@@ -63,6 +64,16 @@ class XlsformTemplateCrudController extends CrudController
         ]);
         CRUD::column('available')->type('boolean')->label('Is the form available for live use?');
 
+        CRUD::filter('xlsform_subject_id')
+        ->type('select2')
+        ->label('Filter by Xlsform subject')
+        ->options(function () {
+            return XlsformSubject::get()->pluck('name', 'id')->toArray();
+        })
+        ->whenActive(function($value) {
+            $this->crud->addClause('where', 'xlsform_subject_id', $value);
+        });
+
         // add the "Select" button for "Select ODK Variables"
         Crud::button('select')
             ->stack('line')
@@ -88,6 +99,11 @@ class XlsformTemplateCrudController extends CrudController
         CRUD::field('description')
             ->type('textarea')
             ->validationRules('nullable');
+
+        CRUD::field('xlsformSubject')
+            ->type('relationship')
+            ->label('Xlsform Subject')
+            ->validationRules('required');
 
         CRUD::field('media')
             ->type('upload_multiple')

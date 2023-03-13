@@ -3,15 +3,16 @@
 
 namespace Stats4sd\OdkLink\Models;
 
-use Backpack\CRUD\app\Models\Traits\CrudTrait;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Support\Arr;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Backpack\CRUD\app\Models\Traits\CrudTrait;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Stats4sd\FileUtil\Models\Traits\HasUploadFields;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class XlsformTemplate extends Model
 {
@@ -57,6 +58,11 @@ class XlsformTemplate extends Model
     public function xlsforms(): HasMany
     {
         return $this->hasMany(Xlsform::class);
+    }
+
+    public function xlsformSubject(): BelongsTo
+    {
+        return $this->belongsTo(XlsformSubject::class);
     }
 
     // A template is either available to everyone (owner_id === NULL), or is owned by a single entity.
