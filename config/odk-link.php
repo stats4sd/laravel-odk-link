@@ -26,7 +26,7 @@ return [
 
         /**
          * Username and password for the main platform account
-         * The platform requires a 'primary' user account on the KoboToolbox server to manage deployments of ODK forms.
+         * The platform requires a 'primary' user account on the ODK Central / KoboToolbox server to manage deployments of ODK forms.
          * This account will *own* every form published by the platform.
          *
          * We recommend not using an account that individuals typically use or have access to, to avoid mismatch between forms deployed and forms in the Laravel database.

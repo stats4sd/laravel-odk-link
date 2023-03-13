@@ -107,7 +107,7 @@ class XlsformTemplateCrudController extends CrudController
 
         CRUD::field('media')
             ->type('upload_multiple')
-            ->label('Add any static files that should be pushed to KoboToolBox as media attachments for this form')
+            ->label('Add any static files that should be pushed to ODK Central as media attachments for this form')
             ->upload(true)
             ->validationRules('nullable');
 
@@ -150,7 +150,7 @@ class XlsformTemplateCrudController extends CrudController
         ])->label('
         <h4>Add Lookups from the Database</h4><br/>
         <div class="bd-callout bd-callout-info font-weight-normal">
-            You should add the name of the MySQL Table or View, and the required name of the resulting CSV file. Every time you deploy this form, the platform will create a new version of the csv file using the data from the MySQL table or view you specify. This file will be uploaded to KoboToolBox as a form media attachment.
+            You should add the name of the MySQL Table or View, and the required name of the resulting CSV file. Every time you deploy this form, the platform will create a new version of the csv file using the data from the MySQL table or view you specify. This file will be uploaded to ODK Central as a form media attachment.
             <br/><br/>
             For example, if the form requires a csv lookup file called "households.csv", and the data is available in a view called "households_csv", then you should an entry like this:
             <ul>
