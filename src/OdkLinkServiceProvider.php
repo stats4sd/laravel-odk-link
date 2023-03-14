@@ -35,7 +35,6 @@ class OdkLinkServiceProvider extends PackageServiceProvider
                 '7_create_app_users_table',
                 '8_create_app_user_assignments_table',
             ])
-            ->hasRoute('/odk-link')
             ->hasCommands([
                 AddCrudPanelLinksToSidebar::class,
                 AddDemoEntries::class,
