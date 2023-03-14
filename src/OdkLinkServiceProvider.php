@@ -57,4 +57,21 @@ class OdkLinkServiceProvider extends PackageServiceProvider
         Livewire::component('owner-forms-table', OwnerFormsTable::class);
 
     }
+
+    public function boot()
+    {
+        //handle routes manually, as we want to let the user override the package routes in the main app:
+        $this->publishes([
+            __DIR__.'/../routes/odk-link.php' => base_path('routes/backpack/odk-link.php')
+        ], 'odk-link-routes');
+
+        // if the user has published the routes file, do not register the package routes.
+        if(file_exists(base_path('routes/backpack/odk-link.php'))) {
+            $this->loadRoutesFrom(base_path('routes/backpack/odk-link.php'));
+        } else {
+            $this->loadRoutesFrom(__DIR__.'/../routes/odk-link.php');
+        }
+
+        return parent::boot();
+    }
 }
