@@ -61,6 +61,7 @@ class Xlsform extends Model
             $xlsform->saveQuietly();
         });
 
+
         // apply a global scope so that only admins (users with the role defined in the config) can view all xlsforms.
         // all other users can only see forms they own, or that are owned by an entity they are linked to. (E.g. a team, group).
         static::addGlobalScope('owned', function (Builder $query) {
