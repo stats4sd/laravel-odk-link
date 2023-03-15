@@ -3,6 +3,7 @@
 namespace Stats4sd\OdkLink\Models;
 
 use Backpack\CRUD\app\Models\Traits\CrudTrait;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
@@ -14,7 +15,8 @@ use Illuminate\Support\Facades\Crypt;
  */
 class OdkProject extends Model
 {
-    use CrudTrait;
+    use CrudTrait,
+        HasFactory;
 
     protected $fillable = ['id', 'name', 'archived', 'description', 'odk_user', 'odk_pass'];
     public $incrementing = false;

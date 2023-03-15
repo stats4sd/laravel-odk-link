@@ -14,6 +14,7 @@ class XlsformTemplateTest extends TestCase
     /** @test */
     public function a_template_can_have_many_forms(): void
     {
+
         $xlsformTemplate = XlsformTemplate::factory()
             ->has(Xlsform::factory()->count(2))
             ->create();

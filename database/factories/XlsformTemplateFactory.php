@@ -15,7 +15,11 @@ class XlsformTemplateFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence(),
-            'xlsfile' => $this->faker->file(__DIR__.'/../../tests/Files/', Storage::disk(config('odk-link.storage.xlsforms'))->path(''), false),
+            'xlsfile' => $this->faker->file(
+                __DIR__.'/../../tests/Files/',
+                Storage::disk(config('odk-link.storage.xlsforms'))->path(''),
+                false)
+            ,
             'description' => $this->faker->paragraph(),
             'media' => null,
             'csv_lookups' => null,

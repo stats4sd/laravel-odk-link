@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->string('owner_type');
             $table->foreignId('odk_project_id')->nullable();
             $table->foreignId('xlsform_template_id')->constrained('xlsform_templates');
-            $table->string('xlsfile')->nullable();
+            $table->string('xlsfile');
             $table->string('title')->nullable()->comment('If null, the system by default retrieves a title in the format $ownerName - $xlsformTemplateTitle');
             $table->string('odk_id')->nullable()->comment('The unique ID of the form on ODK service. If null, the form has not yet been pushed to Kobo.');
             $table->string('odk_draft_token')->nullable()->comment('ODK Central only: The current draft token, required to generate a QR code for testing the draft in ODK Collect');

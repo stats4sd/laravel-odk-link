@@ -9,6 +9,7 @@ use Stats4sd\OdkLink\Commands\AddCrudPanelLinksToSidebar;
 use Stats4sd\OdkLink\Commands\AddDemoEntries;
 use Stats4sd\OdkLink\Commands\CreateMissingOdkProjects;
 use Stats4sd\OdkLink\Commands\GenerateSubmissionRecords;
+use Stats4sd\OdkLink\Http\Livewire\OwnerFormsTable;
 use Stats4sd\OdkLink\Services\OdkLinkService;
 
 class OdkLinkServiceProvider extends PackageServiceProvider

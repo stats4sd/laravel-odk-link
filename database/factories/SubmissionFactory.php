@@ -16,8 +16,9 @@ class SubmissionFactory extends Factory
     public function definition(): array
     {
         return [
-            'xlsform_version_id' => XlsformVersion::factory(),
+            'id' => $this->faker->uuid(),
             'uuid' => $this->faker->uuid(),
+            'xlsform_version_id' => XlsformVersion::factory(),
             'submitted_at' => $this->faker->dateTimeThisYear(),
             'submitted_by' => $this->faker->name,
             'content' => json_encode(['test' => 'test']),

@@ -8,29 +8,34 @@ use Backpack\CRUD\BackpackServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithViews;
 use Illuminate\Support\Facades\Schema;
+use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\Concerns\CreatesApplication;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Stats4sd\OdkLink\OdkLinkServiceProvider;
+use Stats4sd\OdkLink\Services\OdkLinkService;
 
 abstract class TestCase extends Orchestra
 {
 
-    use CreatesApplication;
+    //use CreatesApplication;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => '\\Stats4sd\\OdkLink\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn(string $modelName) => '\\Stats4sd\\OdkLink\\Database\\Factories\\' . class_basename($modelName) . 'Factory'
         );
+
+        app()->bind(OdkLinkService::class, fn() => new FakeOdkLinkService('/'));
     }
 
     protected function getPackageProviders($app): array
     {
         return [
             OdkLinkServiceProvider::class,
-            //BackpackServiceProvider::class,
+            BackpackServiceProvider::class,
+            LivewireServiceProvider::class,
         ];
     }
 
@@ -40,19 +45,17 @@ abstract class TestCase extends Orchestra
 
         Schema::dropAllTables();
 
-        $migrations = [
-            include __DIR__ . '/../database/migrations/1_create_xlsform_templates_table.php.stub',
-            include __DIR__ . '/../database/migrations/4_create_submissions_table.php.stub',
-            include __DIR__ . '/../database/migrations/3_create_xlsform_versions_table.php.stub',
-            include __DIR__ . '/../database/migrations/2_create_xlsforms_table.php.stub',
-            include __DIR__ . '/migrations/create_form_owners_table.php.stub',
-        ];
+        $migrationFiles = scandir(__DIR__ . '/../database/migrations/');
 
-        foreach ($migrations as $migration) {
-            $migration->up();
+        foreach ($migrationFiles as $migrationFile) {
+            if (!in_array($migrationFile, ['.', '..'])) {
+                $migration = include __DIR__ . "/../database/migrations/$migrationFile";
+                $migration->up();
+            }
         }
 
+        $formOwnersMigration = include __DIR__ . "/migrations/create_form_owners_table.php.stub";
+        $formOwnersMigration->up();
+
     }
-
-
 }

@@ -39,7 +39,7 @@ class OdkLinkService
      * Creates a new session + auth token for communication with the ODK Central server
      * @return string $token
      */
-    public function authenticate(): string
+    private function authenticate(): string
     {
         // if a token exists in the cache, return it. Otherwise, create a new session and store the token.
         return Cache::remember('odk-token', now()->addHours(20), function () {
@@ -591,4 +591,3 @@ class OdkLinkService
 //    }
 
 }
-
