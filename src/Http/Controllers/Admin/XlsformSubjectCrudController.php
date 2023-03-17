@@ -3,20 +3,15 @@
 
 namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
-use Illuminate\Support\Arr;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Backpack\CRUD\app\Library\Widget;
 use Stats4sd\OdkLink\Models\XlsformSubject;
-use Stats4sd\OdkLink\Imports\XlsformImport;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
-use Backpack\CRUD\app\Http\Controllers\Operations\ShowOperation;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
-use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * Class XlsformCrudController
@@ -29,7 +24,6 @@ class XlsformSubjectCrudController extends CrudController
     use CreateOperation;
     use UpdateOperation;
     use DeleteOperation;
-    use ShowOperation;
 
     public function setup(): void
     {
@@ -46,6 +40,16 @@ class XlsformSubjectCrudController extends CrudController
      */
     protected function setupListOperation(): void
     {
+        Widget::add()
+                ->to('before_content')
+                ->type('card')
+                ->wrapper(['class' => 'col-md-12 col-lg-10'])
+                ->content(
+                    [
+                        'body' => 'The table below shows the different data subject options for an xlsform template.'
+                    ]
+                );
+                
         CRUD::column('name');
         
     }
@@ -73,11 +77,6 @@ class XlsformSubjectCrudController extends CrudController
     {
         $this->setupCreateOperation();
 
-    }
-
-    public function setupShowOperation(): void
-    {
-        $this->setupListOperation();
     }
 
 }

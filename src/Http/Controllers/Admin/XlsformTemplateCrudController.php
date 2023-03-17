@@ -48,6 +48,8 @@ class XlsformTemplateCrudController extends CrudController
     protected function setupListOperation(): void
     {
         CRUD::column('title');
+        CRUD::column('xlsformSubject')->label('Subject');
+        CRUD::column('description');
         CRUD::column('xlsfile')->type('upload')->wrapper([
             'href' => function ($crud, $column, $entry) {
                 if ($entry->xlsfile) {
@@ -102,7 +104,8 @@ class XlsformTemplateCrudController extends CrudController
 
         CRUD::field('xlsformSubject')
             ->type('relationship')
-            ->label('Xlsform Subject')
+            ->label('Xlsform subject - the data subject of the form')
+            ->placeholder('Select the data subject of the form')
             ->validationRules('required');
 
         CRUD::field('media')
@@ -189,7 +192,29 @@ class XlsformTemplateCrudController extends CrudController
     {
         $this->crud->set('show.setFromDb', false);
 
-        $this->setupListOperation();
+        CRUD::column('title');
+        CRUD::column('xlsformSubject')->label('Subject');
+        CRUD::column('description')->limit(600);
+        CRUD::column('xlsfile')->type('upload')->wrapper([
+            'href' => function ($crud, $column, $entry) {
+                if ($entry->xlsfile) {
+                    return Storage::disk(config('odk-link.storage.xlsforms'))->url($entry->xlsfile);
+                }
+
+                return '#';
+            },
+        ]);
+        CRUD::column('media')->type('upload_multiple')->disk(config('odk-link.storage.xlsforms'));
+        CRUD::column('csv_lookups')->type('table')->columns([
+            'mysql_name' => 'MySQL Table/View',
+            'csv_name' => 'CSV File Name',
+        ]);
+        CRUD::column('available')->type('boolean')->label('Is the form available for live use?');
+
+        // add the "Select" button for "Select ODK Variables"
+        Crud::button('select')
+            ->stack('line')
+            ->view('odk-link::buttons.select');
     }
 
     // Select button, divert to a fully customized blade view file
