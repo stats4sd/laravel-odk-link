@@ -155,7 +155,7 @@ class XlsformTemplateCrudController extends CrudController
         <div class="bd-callout bd-callout-info font-weight-normal">
             You should add the name of the MySQL Table or View, and the required name of the resulting CSV file. Every time you deploy this form, the platform will create a new version of the csv file using the data from the MySQL table or view you specify. This file will be uploaded to ODK Central as a form media attachment.
             <br/><br/>
-            For example, if the form requires a csv lookup file called "households.csv", and the data is available in a view called "households_csv", then you should an entry like this:
+            For example, if the form requires a csv lookup file called "households.csv", and the data is available in a view called "households_csv", then you should add an entry like this:
             <ul>
                 <li>MySQL Table Name = households_csv</li>
                 <li>CSV File Name = households</li>
