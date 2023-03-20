@@ -26,15 +26,15 @@ class OdkLinkServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasViews()
             ->hasMigrations([
-                '1_create_xlsform_templates_table',
-                '2_create_xlsforms_table',
-                '3_create_xlsform_versions_table',
-                '4_create_submissions_table',
-                '5_create_odk_projects_table',
-                '6_create_app_users_table',
-                '7_create_app_user_assignments_table',
+                '1_create_xlsform_subjects_table',
+                '2_create_xlsform_templates_table',
+                '3_create_xlsforms_table',
+                '4_create_xlsform_versions_table',
+                '5_create_submissions_table',
+                '6_create_odk_projects_table',
+                '7_create_app_users_table',
+                '8_create_app_user_assignments_table',
             ])
-            ->hasRoute('/odk-link')
             ->hasCommands([
                 AddCrudPanelLinksToSidebar::class,
                 AddDemoEntries::class,
@@ -55,5 +55,22 @@ class OdkLinkServiceProvider extends PackageServiceProvider
     {
         Livewire::component('owner-forms-table', OwnerFormsTable::class);
 
+    }
+
+    public function boot()
+    {
+        //handle routes manually, as we want to let the user override the package routes in the main app:
+        $this->publishes([
+            __DIR__.'/../routes/odk-link.php' => base_path('routes/backpack/odk-link.php')
+        ], 'odk-link-routes');
+
+        // if the user has published the routes file, do not register the package routes.
+        if(file_exists(base_path('routes/backpack/odk-link.php'))) {
+            $this->loadRoutesFrom(base_path('routes/backpack/odk-link.php'));
+        } else {
+            $this->loadRoutesFrom(__DIR__.'/../routes/odk-link.php');
+        }
+
+        return parent::boot();
     }
 }

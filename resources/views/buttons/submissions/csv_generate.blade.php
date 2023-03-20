@@ -32,7 +32,7 @@
                     // Show an alert with the result
                     swal({
                         title: "Error",
-                        text: "Something went wrong while communicating with Kobotoolbox - please try again or contact the site admin",
+                        text: "Something went wrong while communicating with ODK Central - please try again or contact the site admin",
                         icon: "error",
                         timer: 4000,
                         buttons: false,

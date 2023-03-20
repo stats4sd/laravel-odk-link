@@ -5,9 +5,11 @@ namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
-use Stats4sd\OdkLink\Models\XlsformTemplate;
 use Stats4sd\OdkLink\Imports\XlsformImport;
+use Stats4sd\OdkLink\Models\XlsformSubject;
+use Stats4sd\OdkLink\Models\XlsformTemplate;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
 use Backpack\CRUD\app\Http\Controllers\Operations\ListOperation;
@@ -16,7 +18,6 @@ use Backpack\CRUD\app\Library\CrudPanel\CrudPanelFacade as CRUD;
 use Backpack\CRUD\app\Http\Controllers\Operations\CreateOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\DeleteOperation;
 use Backpack\CRUD\app\Http\Controllers\Operations\UpdateOperation;
-use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * Class XlsformCrudController
@@ -47,6 +48,8 @@ class XlsformTemplateCrudController extends CrudController
     protected function setupListOperation(): void
     {
         CRUD::column('title');
+        CRUD::column('xlsformSubject')->label('Subject');
+        CRUD::column('description');
         CRUD::column('xlsfile')->type('upload')->wrapper([
             'href' => function ($crud, $column, $entry) {
                 if ($entry->xlsfile) {
@@ -62,6 +65,16 @@ class XlsformTemplateCrudController extends CrudController
             'csv_name' => 'CSV File Name',
         ]);
         CRUD::column('available')->type('boolean')->label('Is the form available for live use?');
+
+        CRUD::filter('xlsform_subject_id')
+        ->type('select2')
+        ->label('Filter by Xlsform subject')
+        ->options(function () {
+            return XlsformSubject::get()->pluck('name', 'id')->toArray();
+        })
+        ->whenActive(function($value) {
+            $this->crud->addClause('where', 'xlsform_subject_id', $value);
+        });
 
         // add the "Select" button for "Select ODK Variables"
         Crud::button('select')
@@ -89,9 +102,15 @@ class XlsformTemplateCrudController extends CrudController
             ->type('textarea')
             ->validationRules('nullable');
 
+        CRUD::field('xlsformSubject')
+            ->type('relationship')
+            ->label('Xlsform subject - the data subject of the form')
+            ->placeholder('Select the data subject of the form')
+            ->validationRules('required');
+
         CRUD::field('media')
             ->type('upload_multiple')
-            ->label('Add any static files that should be pushed to KoboToolBox as media attachments for this form')
+            ->label('Add any static files that should be pushed to ODK Central as media attachments for this form')
             ->upload(true)
             ->validationRules('nullable');
 
@@ -134,9 +153,9 @@ class XlsformTemplateCrudController extends CrudController
         ])->label('
         <h4>Add Lookups from the Database</h4><br/>
         <div class="bd-callout bd-callout-info font-weight-normal">
-            You should add the name of the MySQL Table or View, and the required name of the resulting CSV file. Every time you deploy this form, the platform will create a new version of the csv file using the data from the MySQL table or view you specify. This file will be uploaded to KoboToolBox as a form media attachment.
+            You should add the name of the MySQL Table or View, and the required name of the resulting CSV file. Every time you deploy this form, the platform will create a new version of the csv file using the data from the MySQL table or view you specify. This file will be uploaded to ODK Central as a form media attachment.
             <br/><br/>
-            For example, if the form requires a csv lookup file called "households.csv", and the data is available in a view called "households_csv", then you should an entry like this:
+            For example, if the form requires a csv lookup file called "households.csv", and the data is available in a view called "households_csv", then you should add an entry like this:
             <ul>
                 <li>MySQL Table Name = households_csv</li>
                 <li>CSV File Name = households</li>
@@ -173,7 +192,29 @@ class XlsformTemplateCrudController extends CrudController
     {
         $this->crud->set('show.setFromDb', false);
 
-        $this->setupListOperation();
+        CRUD::column('title');
+        CRUD::column('xlsformSubject')->label('Subject');
+        CRUD::column('description')->limit(600);
+        CRUD::column('xlsfile')->type('upload')->wrapper([
+            'href' => function ($crud, $column, $entry) {
+                if ($entry->xlsfile) {
+                    return Storage::disk(config('odk-link.storage.xlsforms'))->url($entry->xlsfile);
+                }
+
+                return '#';
+            },
+        ]);
+        CRUD::column('media')->type('upload_multiple')->disk(config('odk-link.storage.xlsforms'));
+        CRUD::column('csv_lookups')->type('table')->columns([
+            'mysql_name' => 'MySQL Table/View',
+            'csv_name' => 'CSV File Name',
+        ]);
+        CRUD::column('available')->type('boolean')->label('Is the form available for live use?');
+
+        // add the "Select" button for "Select ODK Variables"
+        Crud::button('select')
+            ->stack('line')
+            ->view('odk-link::buttons.select');
     }
 
     // Select button, divert to a fully customized blade view file

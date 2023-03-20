@@ -1,12 +1,13 @@
 <?php
 
 // Admin panels from the ODK Link Package:
-use Stats4sd\OdkLink\Http\Controllers\Admin\OdkProjectCrudController;
-use Stats4sd\OdkLink\Http\Controllers\Admin\SubmissionCrudController;
-use Stats4sd\OdkLink\Http\Controllers\Admin\XlsformCrudController;
-use Stats4sd\OdkLink\Http\Controllers\Admin\XlsformTemplateCrudController;
 use Stats4sd\OdkLink\Models\Xlsform;
 use Stats4sd\OdkLink\Services\OdkLinkService;
+use Stats4sd\OdkLink\Http\Controllers\Admin\XlsformCrudController;
+use Stats4sd\OdkLink\Http\Controllers\Admin\OdkProjectCrudController;
+use Stats4sd\OdkLink\Http\Controllers\Admin\SubmissionCrudController;
+use Stats4sd\OdkLink\Http\Controllers\Admin\XlsformSubjectCrudController;
+use Stats4sd\OdkLink\Http\Controllers\Admin\XlsformTemplateCrudController;
 
 Route::group([
     'prefix' => config('backpack.base.route_prefix', 'admin'),
@@ -15,6 +16,8 @@ Route::group([
         (array) config('backpack.base.middleware_key', 'admin'),
     ),
 ], function () {
+
+    Route::crud('xlsform-subject', XlsformSubjectCrudController::class);
 
     Route::crud('xlsform-template', XlsformTemplateCrudController::class);
 

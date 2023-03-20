@@ -493,7 +493,6 @@ class OdkLinkService
                 'id' => $entry['__id'],
                 'submitted_at' => (new Carbon($entry['__system']['submissionDate']))->toDateTimeString(),
                 'submitted_by' => $entry['__system']['submitterName'],
-                'uuid' => $entry['__id'],
                 'content' => $entryToStore,
             ]);
 
