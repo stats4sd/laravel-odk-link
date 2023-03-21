@@ -44,10 +44,6 @@ class XlsformCrudController extends CrudController
 
 
         // if the current user is an xlsform-admin (role defined in the config), then show all xlsforms. Otherwise, show only the ones that the user has access to:
-
-        if (Auth::check() && !Auth::user()?->hasRole(config('odk-link.roles.xlsform-admin'))) {
-            CRUD::addClause('owned');
-        }
     }
 
     /**
@@ -121,7 +117,7 @@ class XlsformCrudController extends CrudController
 
     public function archiveForm(Xlsform $xlsform, OdkLinkService $odkLinkService): Response
     {
-        if (!xlsform->is_active) {
+        if (!$xlsform->is_active) {
             return response([
                 "type" => "warning",
                 "message" => "The form is currently not active"

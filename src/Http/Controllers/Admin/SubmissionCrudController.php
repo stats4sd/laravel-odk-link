@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use JsonException;
 use Stats4sd\OdkLink\Jobs\ProcessSubmission;
@@ -41,6 +42,7 @@ class SubmissionCrudController extends CrudController
         CRUD::setModel(Submission::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/submission');
         CRUD::setEntityNameStrings('submission', 'submissions');
+
     }
 
     /**
@@ -93,9 +95,9 @@ class SubmissionCrudController extends CrudController
         $this->setupListOperation();
 
         CRUD::column('content')->type('custom_html')->value(
-            /**
-             * @throws JsonException
-             */
+        /**
+         * @throws JsonException
+         */
             function ($entry) {
                 if (!is_array($entry->content)) {
                     $content = json_decode($entry->content, true, 512, JSON_THROW_ON_ERROR);
