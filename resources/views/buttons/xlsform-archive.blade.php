@@ -1,6 +1,7 @@
 <button
-    disabled="{{ $entry->is_active ? '' : 'disabled' }}"
     onclick="archiveForm(this)"
+    data-is-active="{{ $entry->is_active }}"
+    {{ $entry->is_active ? '' : 'disabled="disabled"' }}
     data-route="{{ url($crud->route.'/'.$entry->getKey().'/archive') }}"
     class="btn btn-sm btn-warning"
 >
