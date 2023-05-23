@@ -1,31 +1,38 @@
-@if ($crud->hasAccess('update'))
-	<a href="javascript:void(0)" onclick="syncData(this)" data-route="{{ url($crud->route.'/'.$entry->getKey().'/csvgenerate') }}" class="btn btn-sm btn-success" data-button-type="sync"><i class="la la-trash"></i> Generate New CSV Lookup Files</a>
-@endif
+<button
+    onclick="getSubmissions(this)"
+    data-route="{{ url($crud->route.'/'.$entry->getKey().'/get-submissions') }}"
+    class="btn btn-sm btn-success"
+    data-button-type="action"
+    data-is-active="{{ $entry->is_active }}"
+    {{ $entry->is_active ? '' : 'disabled="disabled"' }}
+>
+    <i class="la la-"></i>Pull<br>Submissions
+</button>
 
 {{-- Button Javascript --}}
 {{-- - used right away in AJAX operations (ex: List) --}}
 {{-- - pushed to the end of the page, after jQuery is loaded, for non-AJAX operations (ex: Show) --}}
-@push('after_scripts') @if (request()->ajax()) @endpush @endif
-<script>
+@push('after_scripts')
+    @if (request()->ajax())
+        @endpush
+    @endif
+    <script>
 
-	if (typeof syncData != 'function') {
-	    $("[data-button-type=sync]").unbind('click');
+        if (typeof getSubmissions != 'function') {
 
-	    function syncData(button) {
-		    // ask for confirmation before deleting an item
-		    // e.preventDefault();
-            var button = $(button);
-            var route = button.attr('data-route');
-            var row = $("#crudTable a[data-route='"+route+"']").closest('tr');
+            function getSubmissions(button) {
+                var button = $(button);
+                var route = button.attr('data-route');
+                var row = $("#crudTable a[data-route='" + route + "']").closest('tr');
 
-            $.ajax({
+                $.ajax({
                 url: route,
                 type: 'POST',
                 success: function(result) {
                     console.log(result);
                     new Noty({
                         type: "info",
-                        text: "done"
+                        text: "Pull Submissions Successful"
                     }).show();
                 },
                 error: function(result) {
@@ -39,8 +46,10 @@
                     });
                 }
             });
-		}
-    }
 
-</script>
-@if (!request()->ajax()) @endpush @endif
+            }
+        }
+    </script>
+    @if (!request()->ajax())
+        @endpush
+    @endif

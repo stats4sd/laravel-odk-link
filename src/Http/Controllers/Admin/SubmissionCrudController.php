@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Redirector;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use JsonException;
 use Stats4sd\OdkLink\Jobs\ProcessSubmission;
@@ -41,6 +42,7 @@ class SubmissionCrudController extends CrudController
         CRUD::setModel(Submission::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/submission');
         CRUD::setEntityNameStrings('submission', 'submissions');
+
     }
 
     /**
@@ -57,8 +59,8 @@ class SubmissionCrudController extends CrudController
         CRUD::column('id')->label('Submission ID');
         CRUD::column('submitted_at')->type('datetime')->format('YYYY-MM-DD HH:mm:ss');
         CRUD::column('processed')->label('Processed?')->type('boolean');
-        CRUD::column('errors')->label('Validation errors')->type('submission_errors')->view_namespace('kobo-link::crud.columns');
-        CRUD::column('entries')->label('Db Entries created')->type('submission_entries')->view_namespace('kobo-link::crud.columns');
+        CRUD::column('errors')->label('Validation Errors')->type('submission_errors')->view_namespace('odk-link::columns')->limit(1000);
+        CRUD::column('entries')->label('Db Entries Created')->type('submission_entries')->view_namespace('odk-link::columns')->limit(1000);
 
         CRUD::filter('xlsform')
             ->type('select2')
@@ -92,17 +94,20 @@ class SubmissionCrudController extends CrudController
     {
         $this->setupListOperation();
 
-        CRUD::column('content')->type('custom_html')->value(/**
+        CRUD::column('content')->type('custom_html')->value(
+        /**
          * @throws JsonException
-         */ function ($entry) {
-            if (!is_array($entry->content)) {
-                $content = json_decode($entry->content, true, 512, JSON_THROW_ON_ERROR);
-            } else {
-                $content = $entry->content;
-            }
+         */
+            function ($entry) {
+                if (!is_array($entry->content)) {
+                    $content = json_decode($entry->content, true, 512, JSON_THROW_ON_ERROR);
+                } else {
+                    $content = $entry->content;
+                }
 
-            return $this->createContentTable($content);
-        });
+                return $this->createContentTable($content);
+            }
+        );
     }
 
     public function createContentTable($array)
@@ -121,7 +126,6 @@ class SubmissionCrudController extends CrudController
                     $value = json_encode($value);
                 } else {
                     $value = $this->createContentTable($value);
-
                 }
             }
 
@@ -136,5 +140,32 @@ class SubmissionCrudController extends CrudController
         $output .= '</table>';
 
         return $output;
+    }
+
+    public function reprocess(Submission $submission)
+    {
+
+        // if a process class and method are not defined within the app, do nothing
+        if (!config('odk-link.submission.process_method.class') && !config('odk-link.submission.process_method.method')) {
+
+            \Alert::add('danger', 'No process_method or class has been defined for submissions. Please check your odk-link config or enviroment file')->flash();
+            return redirect()->back();
+        }
+
+        // delete any database entries created from the previous processing attempts:
+        if (isset($submission->entries)) {
+            foreach ($submission->entries as $model => $ids) {
+                $model::destroy($ids);
+            }
+        }
+
+        // remove any validation error messages from previous processing attempts:
+        $submission->errors = null;
+
+
+        $class = config('odk-link.submission.process_method.class');
+        $method = config('odk-link.submission.process_method.method');
+
+        $class::$method($submission);
     }
 }

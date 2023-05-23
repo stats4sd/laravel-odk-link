@@ -26,7 +26,7 @@ return [
 
         /**
          * Username and password for the main platform account
-         * The platform requires a 'primary' user account on the KoboToolbox server to manage deployments of ODK forms.
+         * The platform requires a 'primary' user account on the ODK Central / KoboToolbox server to manage deployments of ODK forms.
          * This account will *own* every form published by the platform.
          *
          * We recommend not using an account that individuals typically use or have access to, to avoid mismatch between forms deployed and forms in the Laravel database.
@@ -52,10 +52,13 @@ return [
 
     'submission' => [
 
-        // Your application should have an endpoint that processes the submissions. This should:
-        //      - accept a POST request;
-        //      - get the submission based on the submission_id in the body of the POST.
-        // The value here must be the NAME of the route to be used.
-        'process_endpoint' => env('SUBMISSION_PROCESS_ENDPOINT', null),
+        // The class and method used to process the submissions.
+        // The method should be:
+        // - a public static function;
+        // - accept a OdkLink\Models\Submission object as the only required variable.;
+        'process_method' => [
+            'class' => env('SUBMISSION_PROCESS_CLASS', null),
+            'method' => env('SUBMISSION_PROCESS_METHOD', null),
+        ],
     ],
 ];

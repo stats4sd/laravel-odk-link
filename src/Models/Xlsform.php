@@ -15,12 +15,14 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use JsonException;
 use Maatwebsite\Excel\Facades\Excel;
 use Stats4sd\OdkLink\Exports\OdkSubmissionContentExport;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use App\Models\User;
 use Stats4sd\OdkLink\OdkLink;
 use Stats4sd\OdkLink\Services\OdkLinkService;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class Xlsform extends Model
 {
@@ -60,26 +62,26 @@ class Xlsform extends Model
         });
 
 
-    }
-
-    public function scopeOwned($builder)
-    {
-        if (Auth::check()) {
-            $builder->where(function ($query) {
-                $query->whereHas('owner', function (Builder $query) {
-
-                    // is the xlsform owned by the logged in user?
-                    if (is_a($query->getModel(), User::class)) {
-                        $query->where('users.id', Auth::id());
-                    } else {
-                        // is the xlsform owned by a team/group other entity that the logged in user is linked to?
-                        $query->whereHas('users', function ($query) {
+        // apply a global scope so that only admins (users with the role defined in the config) can view all xlsforms.
+        // all other users can only see forms they own, or that are owned by an entity they are linked to. (E.g. a team, group).
+        static::addGlobalScope('owned', function (Builder $query) {
+            if (Auth::check() && !Auth::user()?->hasRole(config('odk-link.roles.xlsform-admin'))) {
+                $query->where(function ($query) {
+                    $query->whereHas('owner', function (Builder $query) {
+                        // is the xlsform owned by the logged in user?
+                        if (is_a($query->getModel(), User::class)) {
                             $query->where('users.id', Auth::id());
-                        });
-                    }
+                        } else {
+                            // is the xlsform owned by a team/group other entity that the logged-in user is linked to?
+                            $query->whereHas('users', function ($query) {
+                                $query->where('users.id', Auth::id());
+                            });
+                        }
+                    });
                 });
-            });
-        }
+            }
+        });
+
     }
 
     // If no title is given, add a default title by combining the owner name and template title.
@@ -124,7 +126,7 @@ class Xlsform extends Model
     }
 
 
-    public function getCurrentVersionAttribute()
+    public function getCurrentVersionAttribute(): ?string
     {
         return $this->xlsformVersions()
             ->where('active', 1)
@@ -185,7 +187,7 @@ class Xlsform extends Model
 
     /**
      * Method to retrieve the encoded settings for the current draft version on ODK Central
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getDraftQrCodeStringAttribute(): ?string
     {
@@ -227,7 +229,7 @@ class Xlsform extends Model
 
     }
 
-    public function exportSubmissionData()
+    public function exportSubmissionData(): BinaryFileResponse
     {
         return Excel::download(new OdkSubmissionContentExport($this), 'test.xlsx');
     }
