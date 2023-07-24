@@ -105,12 +105,12 @@ class SubmissionCrudController extends CrudController
                     $content = $entry->content;
                 }
 
-                return $this->createContentTable($content);
+                return $this->createContentTable($content, $entry);
             }
         );
     }
 
-    public function createContentTable($array)
+    public function createContentTable($array, $entry)
     {
         $output = '
             <table class="table table-striped">
@@ -125,7 +125,7 @@ class SubmissionCrudController extends CrudController
                 if ($key === "__system" || $key === "meta") {
                     $value = json_encode($value);
                 } else {
-                    $value = $this->createContentTable($value);
+                    $value = $this->createContentTable($value, $entry);
                 }
             }
 
@@ -136,6 +136,15 @@ class SubmissionCrudController extends CrudController
                 </tr>
                 ';
         }
+
+        // hack to add media links to data presented in table.
+        // This whole section should be re-worked based on the xlsformversion Schema!
+
+        foreach($entry->getMedia() as $mediaItem) {
+
+            $output = str_replace($mediaItem->file_name, "<a href='{$mediaItem->getUrl()}'>{$mediaItem->file_name}<a/>", $output);
+        }
+
 
         $output .= '</table>';
 

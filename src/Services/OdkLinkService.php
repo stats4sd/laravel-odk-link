@@ -9,6 +9,7 @@ use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
@@ -487,6 +488,7 @@ class OdkLinkService
             // TODO: hook this into the select variables work from the other branch...
             $schema = collect($xlsformVersion->schema);
 
+
             $entryToStore = $this->processEntry($entry, $schema);
 
             $submission = $xlsformVersion?->submissions()->create([
@@ -500,38 +502,65 @@ class OdkLinkService
             $class = config('odk-link.submission.process_method.class');
             $method = config('odk-link.submission.process_method.method');
 
-            if($class && $method) {
+            if ($class && $method) {
                 $class::$method($submission);
             }
+
+            //check if media is expected
+            if ($entry['__system']['attachmentsPresent'] > 0) {
+                $mediaPresent = Http::withToken($token)
+                    ->get("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/submissions/${entry['__id']}/attachments")
+                    ->throw()
+                    ->json();
+
+
+                foreach ($mediaPresent as $mediaItem) {
+
+                    // download the attachment
+                    $result = Http::withToken($token)
+                        ->get("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/submissions/${entry['__id']}/attachments/${mediaItem['name']}")
+                        ->throw();
+
+                    // store the attachment locally
+                    Storage::disk(config('odk-link.storage.media'))
+                        ->put($mediaItem['name'], $result->body());
+
+                    // link it to the submission via Media Library
+                    $submission->addMediaFromDisk($mediaItem['name'], config('odk-link.storage.media'))
+                        ->toMediaLibrary();
+
+                }
+            }
+
 
         }
 
     }
 
     // WIP
-   public function processEntry($entry, $schema)
-   {
-       foreach ($entry as $key => $value) {
-           // search for structure groups to flatten
-           $schemaEntry = $schema->firstWhere('name', '=', $key);
+    public function processEntry($entry, $schema)
+    {
+        foreach ($entry as $key => $value) {
+            // search for structure groups to flatten
+            $schemaEntry = $schema->firstWhere('name', '=', $key);
 
-           if(!$schemaEntry) {
-               continue;
-           }
-           if ($schemaEntry['type'] === 'structure') {
-               $entry = array_merge($this->processEntry($value, $schema), $entry);
-               unset($entry[$key]);
-           }
+            if (!$schemaEntry) {
+                continue;
+            }
+            if ($schemaEntry['type'] === 'structure') {
+                $entry = array_merge($this->processEntry($value, $schema), $entry);
+                unset($entry[$key]);
+            }
 
-           if ($schemaEntry['type'] === 'repeat') {
-               $entry[$key] = collect($entry[$key])->map(function ($repeatEntry) use ($schema) {
-                   return $this->processEntry($repeatEntry, $schema);
-               })->toArray();
-           }
-       }
+            if ($schemaEntry['type'] === 'repeat') {
+                $entry[$key] = collect($entry[$key])->map(function ($repeatEntry) use ($schema) {
+                    return $this->processEntry($repeatEntry, $schema);
+                })->toArray();
+            }
+        }
 
-       return $entry;
-   }
+        return $entry;
+    }
 //
 //    public function processEntryNOPE(array $entryToStore, array $entry, Collection $schema, array $repeatPath = []): array
 //    {
