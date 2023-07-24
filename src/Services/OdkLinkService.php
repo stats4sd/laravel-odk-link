@@ -164,7 +164,7 @@ class OdkLinkService
         $response = Http::withToken($token)
             ->withHeaders([
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'X-XlsForm-FormId-Fallback' => Str::slug($xlsform->title) . ".xlsx",
+                'X-XlsForm-FormId-Fallback' => Str::slug($xlsform->title),
             ])
             ->withBody($file, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             ->post($url)
@@ -590,4 +590,3 @@ class OdkLinkService
 //    }
 
 }
-
