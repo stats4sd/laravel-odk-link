@@ -45,6 +45,9 @@ return [
         'media' => config('filesystem.default', 'public'),
     ],
 
+
+    // This section assumes that you are using the Spatie Laravel Permission package to handle user roles. It may or may not work with other approaches to identifying the admin.
+    // TODO: consider generalising this to become a function that the developer can modify to decide who is admin, similar to the Backpack IsAdmin Middleware...
     'roles' => [
         // the role that a user must have in order to see *all* forms, and not just the ones owned by an entity linked to the user.
         'xlsform-admin' => env('XLSFORM_ADMIN_ROLE', 'admin'),

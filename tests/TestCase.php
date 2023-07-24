@@ -7,6 +7,7 @@ use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
 use Backpack\CRUD\BackpackServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithViews;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schema;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\Concerns\CreatesApplication;
@@ -54,8 +55,23 @@ abstract class TestCase extends Orchestra
             }
         }
 
-        $formOwnersMigration = include __DIR__ . "/migrations/create_form_owners_table.php.stub";
-        $formOwnersMigration->up();
+        $testMigrationFiles = scandir(__DIR__ . '/migrations');
 
+        foreach($testMigrationFiles as $testMigrationFile) {
+            if(!in_array($testMigrationFile, ['.', '..'])) {
+                $migration = include __DIR__ . "/migrations/$testMigrationFile";
+                $migration->up();
+            }
+        }
+
+    }
+
+    public function setupAdminUser(): Models\User
+    {
+        return Models\User::create([
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
     }
 }
