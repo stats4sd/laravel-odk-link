@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('xlsform_subjects', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
+            $table->id('id');
             $table->string('name');
             $table->timestamps();
         });

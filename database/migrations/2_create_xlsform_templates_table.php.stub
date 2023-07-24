@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->string('owner_type')->nullable();
             $table->timestamps();
             $table->softDeletes();
-        });
+        });q
     }
 
     public function down(): void

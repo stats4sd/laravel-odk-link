@@ -25,6 +25,7 @@
         "maatwebsite/excel": "^3.1.4",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-package-tools": "^1.9.2",
+        "stats4sd/laravel-backpack-section-title": "^1.2",
         "stats4sd/laravel-file-util": "dev-main"
     },
     "require-dev": {
@@ -32,7 +33,7 @@
         "laravel/pint": "^1.0",
         "nunomaduro/collision": "^6.0",
         "nunomaduro/larastan": "^2.0.1",
-        "orchestra/testbench": "^7.0",
+        "orchestra/testbench": "^7.0|^8.0",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
