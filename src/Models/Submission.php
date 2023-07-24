@@ -19,10 +19,9 @@ class Submission extends Model implements HasMedia
     use HasFactory;
     use InteractsWithMedia;
 
+
     protected $table = 'submissions';
-    public $incrementing = false;
-    public $keyType = 'string';
-    protected $guarded = [];
+    protected $guarded = ['id'];
     protected $casts = [
         'content' => 'array',
         'errors' => 'array',

@@ -492,7 +492,7 @@ class OdkLinkService
             $entryToStore = $this->processEntry($entry, $schema);
 
             $submission = $xlsformVersion?->submissions()->create([
-                'id' => $entry['__id'],
+                'odk_id' => $entry['__id'],
                 'submitted_at' => (new Carbon($entry['__system']['submissionDate']))->toDateTimeString(),
                 'submitted_by' => $entry['__system']['submitterName'],
                 'content' => $entryToStore,
@@ -514,6 +514,7 @@ class OdkLinkService
                     ->json();
 
 
+
                 foreach ($mediaPresent as $mediaItem) {
 
                     // download the attachment
@@ -527,7 +528,7 @@ class OdkLinkService
 
                     // link it to the submission via Media Library
                     $submission->addMediaFromDisk($mediaItem['name'], config('odk-link.storage.media'))
-                        ->toMediaLibrary();
+                    ->toMediaLibrary();
 
                 }
             }
