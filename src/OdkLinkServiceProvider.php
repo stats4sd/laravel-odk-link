@@ -9,6 +9,7 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Stats4sd\OdkLink\Commands\AddCrudPanelLinksToSidebar;
 use Stats4sd\OdkLink\Commands\AddDemoEntries;
 use Stats4sd\OdkLink\Commands\CreateMissingOdkProjects;
+use Stats4sd\OdkLink\Commands\CreatePlatformTestProject;
 use Stats4sd\OdkLink\Commands\GenerateSubmissionRecords;
 use Stats4sd\OdkLink\Commands\UpdateSubmissionsToUseIntegerIds;
 use Stats4sd\OdkLink\Services\OdkLinkService;
@@ -43,6 +44,7 @@ class OdkLinkServiceProvider extends PackageServiceProvider
                 GenerateSubmissionRecords::class,
                 CreateMissingOdkProjects::class,
                 UpdateSubmissionsToUseIntegerIds::class,
+                CreatePlatformTestProject::class,
             ]);
 
     }

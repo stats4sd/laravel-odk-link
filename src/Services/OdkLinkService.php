@@ -22,7 +22,9 @@ use Stats4sd\OdkLink\Exports\SqlViewExport;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use Stats4sd\OdkLink\Models\AppUser;
 use Stats4sd\OdkLink\Models\OdkProject;
+use Stats4sd\OdkLink\Models\Platform;
 use Stats4sd\OdkLink\Models\Xlsform;
+use Stats4sd\OdkLink\Models\XlsformTemplate;
 use Stats4sd\OdkLink\Models\XlsformVersion;
 
 
@@ -57,6 +59,7 @@ class OdkLinkService
         });
 
     }
+
 
 
     #########################################################
@@ -458,6 +461,21 @@ class OdkLinkService
         }
 
         return $filePath;
+    }
+
+    /** Lists the expected attachments for an existing draft form */
+    public function checkRequiredAttachments(Xlsform $xlsform): array
+    {
+        $token = $this->authenticate();
+
+        $url = "{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/attachments";
+
+        $response = Http::withToken($token)
+            ->get($url)
+            ->throw()
+            ->json();
+
+        dd($response);
     }
 
 
