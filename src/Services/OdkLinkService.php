@@ -58,6 +58,11 @@ class OdkLinkService
 
     }
 
+
+    #########################################################
+    ### ODK PROJECTS
+    #########################################################
+
     /**
      * Creates a new project in ODK Central
      * @param string $name
@@ -141,6 +146,10 @@ class OdkLinkService
             ->json();
     }
 
+    #########################################################
+    ### DRAFT FORMS
+    #########################################################
+
     /**
      * Creates a new (draft) form.
      * If the form is not already deployed, it will create a new form instance on ODK Central.
@@ -200,73 +209,9 @@ class OdkLinkService
             ->json();
     }
 
-    /**
-     * Uploads all media files for an XLSform to ODK Central - both static files and dyncsv files
-     * @param Xlsform $xlsform
-     * @return bool $success
-     * @throws RequestException
-     */
-    public function uploadMediaFileAttachments(Xlsform $xlsform): bool
-    {
-        // static files
-        $files = $xlsform->xlsformTemplate->media;
-
-        if ($files && count($files) > 0) {
-
-            foreach ($files as $file) {
-                $this->uploadSingleMediaFile($xlsform, $file);
-            }
-
-        }
-        // dynamic files
-        $csv_lookups = $xlsform->xlsformTemplate->csv_lookups;
-
-
-        if ($csv_lookups && count($csv_lookups) > 0) {
-
-            foreach ($csv_lookups as $lookup) {
-
-                $this->uploadSingleMediaFile(
-                    $xlsform,
-                    $this->createCsvLookupFile($xlsform, $lookup),
-                );
-
-            }
-        }
-
-        return true;
-
-    }
-
-    /**
-     * Uploads a single media file to the given xlsform
-     * @param Xlsform $xlsform
-     * @param string $filePath
-     * @return array
-     * @throws RequestException
-     */
-    public function uploadSingleMediaFile(Xlsform $xlsform, string $filePath): array
-    {
-        $token = $this->authenticate();
-        $file = file_get_contents(Storage::disk(config('odk-link.storage.xlsforms'))->path($filePath));
-
-        $mimeType = mime_content_type(Storage::disk(config('odk-link.storage.xlsforms'))->path($filePath));
-        $fileName = collect(explode("/", $filePath))->last();
-
-        try {
-
-            return Http::withToken($token)
-                ->contentType($mimeType)
-                ->withBody($file, $mimeType)
-                ->post("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/draft/attachments/{$fileName}")
-                ->throw()
-                ->json();
-        } catch (RequestException $exception) {
-            if ($exception->getCode() === 404) {
-                abort(500, 'The file ' . $fileName . ' is not an expected file name for this ODK form template. Please review the form and check which media files are expected');
-            }
-        }
-    }
+    #########################################################
+    ### ODK FORM HANDLING
+    #########################################################
 
     /**
      * Publishes the current draft form so it is available for live data collection
@@ -345,72 +290,6 @@ class OdkLinkService
 
     }
 
-    /**
-     * Generates a lookup file for a specific xlsform.
-     * @param Xlsform $xlsform
-     * @param mixed $lookup
-     * @return void
-     */
-    private function generateLookupFile(Xlsform $xlsform, mixed $lookup)
-    {
-    }
-
-    /**
-     * Creates a new csv lookup file from the database;
-     * @param Xlsform $xlsform
-     * @param mixed $lookup
-     * @return string
-     */
-    private function createCsvLookupFile(Xlsform $xlsform, mixed $lookup): string
-    {
-
-        $filePath = 'xlsforms' . $xlsform->id . '/' . $lookup['csv_name'] . ".csv";
-
-        if ($lookup['per_owner'] === "1") {
-            $owner = $xlsform->owner;
-        } else {
-            $owner = null;
-        }
-
-
-        Excel::store(
-            new SqlViewExport($lookup['mysql_name'], $owner, $lookup['owner_foreign_key']),
-            $filePath,
-            config('odk-link.storage.xlsforms')
-        );
-
-        // If the csv file is used with "select_one_from_external_file" (or multiple) it must not have any enclosure characters:
-        if (isset($lookup['external_file']) && $lookup['external_file'] === "1") {
-            $contents = Storage::disk(config('odk-link.storage.xlsforms'))->get($filePath);
-            $contents = Str::of($contents)->replace('"', '');
-
-            Storage::disk(config('odk-link.storage.xlsforms'))->put($filePath, $contents);
-        }
-
-        return $filePath;
-    }
-
-    public function test()
-    {
-
-        $data = Http::withToken($this->authenticate())
-            ->get("{$this->endpoint}/projects/24/app-users")
-            ->throw()
-            ->json();
-
-        AppUser::create(
-            [
-                'id' => $data[0]['id'],
-                'odk_project_id' => $data[0]['projectId'],
-                'type' => $data[0]['type'],
-                'display_name' => $data[0]['displayName'],
-                'token' => $data[0]['token'],
-            ]
-        );
-
-        return 'hi';
-    }
-
     public function unArchiveForm(Xlsform $xlsform)
     {
         $token = $this->authenticate();
@@ -463,6 +342,128 @@ class OdkLinkService
         return $xlsformVersion;
     }
 
+    #########################################################
+    ### FORM MEDIA ATTACHMENTS
+    #########################################################
+
+    /**
+     * Uploads all media files for an XLSform to ODK Central - both static files and dyncsv files
+     * @param Xlsform $xlsform
+     * @return bool $success
+     * @throws RequestException
+     */
+    public function uploadMediaFileAttachments(Xlsform $xlsform): bool
+    {
+        // static files
+        $files = $xlsform->xlsformTemplate->media;
+
+        if ($files && count($files) > 0) {
+
+            foreach ($files as $file) {
+                $this->uploadSingleMediaFile($xlsform, $file);
+            }
+
+        }
+        // dynamic files
+        $csv_lookups = $xlsform->xlsformTemplate->csv_lookups;
+
+
+        if ($csv_lookups && count($csv_lookups) > 0) {
+
+            foreach ($csv_lookups as $lookup) {
+
+                $this->uploadSingleMediaFile(
+                    $xlsform,
+                    $this->createCsvLookupFile($xlsform, $lookup),
+                );
+
+            }
+        }
+
+        return true;
+
+    }
+
+    /**
+     * Uploads a single media file to the given xlsform
+     * @param Xlsform $xlsform
+     * @param string $filePath
+     * @return array
+     * @throws RequestException
+     */
+    public function uploadSingleMediaFile(Xlsform $xlsform, string $filePath): array
+    {
+        $token = $this->authenticate();
+        $file = file_get_contents(Storage::disk(config('odk-link.storage.xlsforms'))->path($filePath));
+
+        $mimeType = mime_content_type(Storage::disk(config('odk-link.storage.xlsforms'))->path($filePath));
+        $fileName = collect(explode("/", $filePath))->last();
+
+        try {
+
+            return Http::withToken($token)
+                ->contentType($mimeType)
+                ->withBody($file, $mimeType)
+                ->post("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/draft/attachments/{$fileName}")
+                ->throw()
+                ->json();
+        } catch (RequestException $exception) {
+            if ($exception->getCode() === 404) {
+                abort(500, 'The file ' . $fileName . ' is not an expected file name for this ODK form template. Please review the form and check which media files are expected');
+            }
+        }
+    }
+
+
+    /**
+     * Generates a lookup file for a specific xlsform.
+     * @param Xlsform $xlsform
+     * @param mixed $lookup
+     * @return void
+     */
+    private function generateLookupFile(Xlsform $xlsform, mixed $lookup)
+    {
+    }
+
+    /**
+     * Creates a new csv lookup file from the database;
+     * @param Xlsform $xlsform
+     * @param mixed $lookup
+     * @return string
+     */
+    private function createCsvLookupFile(Xlsform $xlsform, mixed $lookup): string
+    {
+
+        $filePath = 'xlsforms' . $xlsform->id . '/' . $lookup['csv_name'] . ".csv";
+
+        if ($lookup['per_owner'] === "1") {
+            $owner = $xlsform->owner;
+        } else {
+            $owner = null;
+        }
+
+
+        Excel::store(
+            new SqlViewExport($lookup['mysql_name'], $owner, $lookup['owner_foreign_key']),
+            $filePath,
+            config('odk-link.storage.xlsforms')
+        );
+
+        // If the csv file is used with "select_one_from_external_file" (or multiple) it must not have any enclosure characters:
+        if (isset($lookup['external_file']) && $lookup['external_file'] === "1") {
+            $contents = Storage::disk(config('odk-link.storage.xlsforms'))->get($filePath);
+            $contents = Str::of($contents)->replace('"', '');
+
+            Storage::disk(config('odk-link.storage.xlsforms'))->put($filePath, $contents);
+        }
+
+        return $filePath;
+    }
+
+
+    #########################################################
+    ### SUBMISSION HANDLING
+    #########################################################
 
     public function getSubmissions(Xlsform $xlsform)
     {
@@ -514,7 +515,6 @@ class OdkLinkService
                     ->json();
 
 
-
                 foreach ($mediaPresent as $mediaItem) {
 
                     // download the attachment
@@ -528,7 +528,7 @@ class OdkLinkService
 
                     // link it to the submission via Media Library
                     $submission->addMediaFromDisk($mediaItem['name'], config('odk-link.storage.media'))
-                    ->toMediaLibrary();
+                        ->toMediaLibrary();
 
                 }
             }
