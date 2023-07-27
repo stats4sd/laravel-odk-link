@@ -2,6 +2,7 @@
 
 namespace Stats4sd\OdkLink\Commands;
 
+use Hoa\Math\Visitor\Arithmetic;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 
@@ -21,6 +22,13 @@ class UpdateSubmissionsToUseIntegerIds extends Command
 
     public function handle(): int
     {
+        // add specific submission update migration
         Artisan::call("vendor:publish --tag=odk-link-migrations-v1-update-only");
+
+
+        // setup Spatie Media Library
+        Artisan::call('vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"');
+        Artisan::call('migrate');
+        Artisan::call('vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"');
     }
 }
