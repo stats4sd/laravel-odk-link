@@ -20,11 +20,12 @@ use Maatwebsite\Excel\Facades\Excel;
 use Stats4sd\OdkLink\Exports\OdkSubmissionContentExport;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use App\Models\User;
+use Stats4sd\OdkLink\Models\Interfaces\WithXlsFormDrafts;
 use Stats4sd\OdkLink\OdkLink;
 use Stats4sd\OdkLink\Services\OdkLinkService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class Xlsform extends Model
+class Xlsform extends Model implements WithXlsFormDrafts
 {
     use CrudTrait;
     use HasFactory;

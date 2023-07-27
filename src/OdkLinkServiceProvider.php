@@ -77,13 +77,18 @@ class OdkLinkServiceProvider extends PackageServiceProvider
         }
 
         // publish optional upgrade-migrations on separate tag
-        $updateFileName = $this->package->basePath("/../database/migrations/update_submissions_table.php.stub");
+        $updateFileNames = [
+            $this->package->basePath("/../database/migrations/update_submissions_table.php.stub"),
+            $this->package->basePath("/../database/migrations/update_xlsform_templates_table.php.stub"),
+        ];
 
-        $this->publishes([
-            $updateFileName => $this->generateMigrationName(
-                'update_submissions_table.php',
-                Carbon::now()->addSecond()
-            ),], "{$this->package->shortName()}-migrations-v1-update-only");
+        foreach ($updateFileNames as $updateFileName) {
+            $this->publishes([
+                $updateFileName => $this->generateMigrationName(
+                    'update_submissions_table.php',
+                    Carbon::now()->addSecond()
+                ),], "{$this->package->shortName()}-migrations-v1-update-only");
+        }
 
         return parent::boot();
     }

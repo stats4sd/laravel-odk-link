@@ -21,6 +21,7 @@ use SaintSystems\OData\ODataClient;
 use Stats4sd\OdkLink\Exports\SqlViewExport;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use Stats4sd\OdkLink\Models\AppUser;
+use Stats4sd\OdkLink\Models\Interfaces\WithXlsFormDrafts;
 use Stats4sd\OdkLink\Models\OdkProject;
 use Stats4sd\OdkLink\Models\Platform;
 use Stats4sd\OdkLink\Models\Xlsform;
@@ -161,7 +162,7 @@ class OdkLinkService
      * @return array $xlsformDetails
      * @throws RequestException
      */
-    public function createDraftForm(Xlsform $xlsform): array
+    public function createDraftForm(WithXlsFormDrafts $xlsform): array
     {
         $token = $this->authenticate();
 
@@ -190,7 +191,8 @@ class OdkLinkService
         }
 
         // deploy media files
-        $this->uploadMediaFileAttachments($xlsform);
+        // TEMPORARILY REMOVED FOR XLSFORM TEMPLATE TESTING
+        // $this->uploadMediaFileAttachments($xlsform);
 
 
         return $this->getDraftFormDetails($xlsform);
@@ -202,7 +204,7 @@ class OdkLinkService
      * @return array
      * @throws RequestException
      */
-    public function getDraftFormDetails(Xlsform $xlsform): array
+    public function getDraftFormDetails(WithXlsFormDrafts $xlsform): array
     {
         $token = $this->authenticate();
 

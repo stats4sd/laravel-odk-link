@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Stats4sd\OdkLink\Imports\XlsformImport;
 use Stats4sd\OdkLink\Models\XlsformSubject;
 use Stats4sd\OdkLink\Models\XlsformTemplate;
@@ -67,14 +68,14 @@ class XlsformTemplateCrudController extends CrudController
         CRUD::column('available')->type('boolean')->label('Is the form available for live use?');
 
         CRUD::filter('xlsform_subject_id')
-        ->type('select2')
-        ->label('Filter by Xlsform subject')
-        ->options(function () {
-            return XlsformSubject::get()->pluck('name', 'id')->toArray();
-        })
-        ->whenActive(function($value) {
-            $this->crud->addClause('where', 'xlsform_subject_id', $value);
-        });
+            ->type('select2')
+            ->label('Filter by Xlsform subject')
+            ->options(function () {
+                return XlsformSubject::get()->pluck('name', 'id')->toArray();
+            })
+            ->whenActive(function ($value) {
+                $this->crud->addClause('where', 'xlsform_subject_id', $value);
+            });
 
         // add the "Select" button for "Select ODK Variables"
         Crud::button('select')
@@ -90,6 +91,20 @@ class XlsformTemplateCrudController extends CrudController
      */
     protected function setupCreateOperation(): void
     {
+        // only "save and edit" should be available
+        CRUD::removeSaveActions(['save_and_back', 'save_and_show', 'save_and_new', 'save_and_preview']);
+
+        CRUD::field('create_header')
+            ->type('section-title')
+            ->title('Step 1: Upload XLSForm File')
+            ->content('In this first step, please upload the XLSform file. The file will be sent to ODK Central for checking. After saving, you will be able to:<ul>
+                <li>Review any ODK errors that were found in the form (TODO)</li>
+                <li>Add required media files, or link the form to database tables if you want csv files that automatically update and/or that contain owner-specific data</li>
+                <li>Automatically publish the form to all platform users, or only to specific users. (TODO)</li>
+                </ul>
+            ')
+            ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
+
         CRUD::field('title')
             ->validationRules('required|max:255');
 
@@ -107,18 +122,50 @@ class XlsformTemplateCrudController extends CrudController
             ->label('Xlsform subject - the data subject of the form')
             ->placeholder('Select the data subject of the form')
             ->validationRules('required')
-        ->inline_create([
-            'entity' => 'xlsformSubject',
-            'modal_route' => route('xlsform-subject-inline-create'),
-            'create_route' => route('xlsform-subject-inline-create-save'),
-            'add_button_label' => 'Create new data subject',
-        ]);
+            ->inline_create([
+                'entity' => 'xlsformSubject',
+                'modal_route' => route('xlsform-subject-inline-create'),
+                'create_route' => route('xlsform-subject-inline-create-save'),
+                'add_button_label' => 'Create new data subject',
+            ]);
 
-        CRUD::field('media')
-            ->type('upload_multiple')
-            ->label('Add any static files that should be pushed to ODK Central as media attachments for this form')
+        CRUD::field('create_footer')
+            ->type('section-title')
+            ->content('When you save, the XLSform file will be uploaded to ODK Central for checking. On the next page, you will see the feedback of this checking.')
+            ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
+    }
+
+    /**
+     * Define what happens when the Update operation is loaded.
+     *
+     * @see https://backpackforlaravel.com/docs/crud-operation-update
+     * @return void
+     */
+    protected function setupUpdateOperation(): void
+    {
+        $this->setupCreateOperation();
+
+        CRUD::removeField('xlsfile');
+        CRUD::removeField('create_header');
+
+
+        CRUD::field('xlsfile')
+            ->after('title')
+            ->type('upload')
             ->upload(true)
             ->validationRules('nullable');
+
+//        CRUD::field('media')
+//            ->type('upload_multiple')
+//            ->label('Add any static files that should be pushed to ODK Central as media attachments for this form')
+//            ->upload(true)
+//            ->validationRules('nullable');
+
+        CRUD::field('xlsform_draft_qr_string')
+            ->type('custom_html')
+            ->value('<div class="my-4 mx-3 d-flex justify-content-left">' .
+                QrCode::size(200)->generate($this->crud->getCurrentEntry()->draft_qr_code_string) . '</div>'
+            );
 
 
         CRUD::field('csv_lookups')->type('repeatable')->subfields([
@@ -170,28 +217,6 @@ class XlsformTemplateCrudController extends CrudController
         </div>
         ')->entity_singular('CSV Lookup reference');
 
-        CRUD::field('available')
-            ->label('If this form should be available to all users, tick this box')
-            ->type('checkbox');
-    }
-
-    /**
-     * Define what happens when the Update operation is loaded.
-     *
-     * @see https://backpackforlaravel.com/docs/crud-operation-update
-     * @return void
-     */
-    protected function setupUpdateOperation(): void
-    {
-        $this->setupCreateOperation();
-
-        CRUD::removeField('xlsfile');
-
-        CRUD::field('xlsfile')
-            ->after('title')
-            ->type('upload')
-            ->upload(true)
-            ->validationRules('nullable');
     }
 
     public function setupShowOperation(): void
@@ -238,12 +263,12 @@ class XlsformTemplateCrudController extends CrudController
         $selectedFields = str_getcsv($entry->selected_fields);
 
         return view('odk-link::xlsformtemplate.select-odk-variables',
-                    [
-                        'entry' => $entry,
-                        'surveySheet' => $surveySheet,
-                        'selectedFields' => $selectedFields,
-                    ]
-                );
+            [
+                'entry' => $entry,
+                'surveySheet' => $surveySheet,
+                'selectedFields' => $selectedFields,
+            ]
+        );
     }
 
     // handle the form submission for user selected ODK variables

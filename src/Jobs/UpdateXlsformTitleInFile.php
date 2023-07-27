@@ -13,6 +13,7 @@ use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Exception;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
+use Stats4sd\OdkLink\Models\Interfaces\WithXlsFormDrafts;
 use Stats4sd\OdkLink\Models\Xlsform;
 
 
@@ -27,7 +28,7 @@ class UpdateXlsformTitleInFile implements ShouldQueue
     use Queueable;
     use SerializesModels;
 
-    public function __construct(public Xlsform $xlsform)
+    public function __construct(public WithXlsFormDrafts $xlsform)
     {
     }
 

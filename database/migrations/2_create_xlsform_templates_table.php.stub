@@ -19,7 +19,14 @@ return new class extends Migration {
             $table->string('available')->nullable()->comment('Available to all users? If false, the form is only available to testers or admins.');
             $table->foreignId('owner_id')->nullable();
             $table->string('owner_type')->nullable();
-            $table->timestamps();
+
+            // odk draft details
+            $table->string('odk_id')->nullable()->comment('The unique ID of the form on ODK service. If null, the form has not yet been pushed to ODK Central.');
+            $table->string('odk_draft_token')->nullable()->comment('ODK Central only: The current draft token, required to generate a QR code for testing the draft in ODK Collect');
+            $table->string('has_draft')->nullable()->comment('Does the form have a deployed draft?');
+            $table->string('enketo_draft_url')->nullable()->comment('url to the enketo version - pulled from the ODK service if supported/enabled');
+
+
             $table->softDeletes();
         });
     }

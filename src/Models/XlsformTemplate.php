@@ -3,22 +3,30 @@
 
 namespace Stats4sd\OdkLink\Models;
 
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Arr;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Backpack\CRUD\app\Models\Traits\CrudTrait;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use JsonException;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Stats4sd\FileUtil\Models\Traits\HasUploadFields;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
+use Stats4sd\OdkLink\Models\Interfaces\WithXlsFormDrafts;
+use Stats4sd\OdkLink\Services\OdkLinkService;
 
-class XlsformTemplate extends Model
+class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
 {
     use CrudTrait;
     use HasFactory;
     use HasUploadFields;
+    use InteractsWithMedia;
 
     protected $table = 'xlsform_templates';
     protected $guarded = ['id'];
@@ -26,6 +34,23 @@ class XlsformTemplate extends Model
         'media' => 'array',
         'csv_lookups' => 'array',
     ];
+
+    protected static function booted()
+    {
+        // on creating, push the new form to ODK Central
+        static::created(function (XlsformTemplate $xlsformTemplate) {
+            $odkLinkService = app()->make(OdkLinkService::class);
+
+            // update form title in xlsfile to match user-given title
+            UpdateXlsformTitleInFile::dispatchSync($xlsformTemplate);
+
+            // set the owner
+            $xlsformTemplate->owner()->associate(Platform::first());
+
+            $xlsformTemplate->deployDraft($odkLinkService);
+            $xlsformTemplate->saveQuietly();
+        });
+    }
 
     public function setXlsfileAttribute($value): void
     {
@@ -131,4 +156,51 @@ class XlsformTemplate extends Model
     }
 
 
+    /**
+     * @throws RequestException
+     */
+    public function deployDraft(OdkLinkService $service): void
+    {
+
+        $odkXlsFormDetails = $service->createDraftForm($this);
+
+        $this->updateQuietly([
+            'odk_id' => $odkXlsFormDetails['xmlFormId'],
+            'odk_draft_token' => $odkXlsFormDetails['draftToken'],
+            'odk_version_id' => $odkXlsFormDetails['version'],
+            'has_draft' => true,
+            'enketo_draft_url' => $odkXlsFormDetails['enketoId'],
+        ]);
+    }
+
+    /**
+     * Method to retrieve the encoded settings for the current draft version on ODK Central
+     * @throws JsonException
+     */
+    public function getDraftQrCodeStringAttribute(): ?string
+    {
+        if (!$this->has_draft) {
+            return null;
+        }
+
+        $settings = [
+            "general" => [
+                "server_url" => config('odk-link.odk.base_endpoint') . "/test/{$this->odk_draft_token}/projects/{$this->owner->odkProject->id}/forms/{$this->odk_id}/draft",
+                "form_update_mode" => "match_exactly",
+            ],
+            "project" => ["name" => "(DRAFT) " . $this->title, "icon" => "📝"],
+            "admin" => ["automatic_update" => true],
+        ];
+
+        $json = json_encode($settings, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+
+        return base64_encode(zlib_encode($json, ZLIB_ENCODING_DEFLATE));
+
+    }
+
+
+    public function getOdkLink(): ?string
+    {
+        return config('odk-link.odk.url') . "/#/projects/" . $this->owner->odkProject->id . "/forms/" . $this->odk_id . "/draft";
+    }
 }
