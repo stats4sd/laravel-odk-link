@@ -48,6 +48,7 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
             $xlsformTemplate->owner()->associate(Platform::first());
 
             $xlsformTemplate->deployDraft($odkLinkService);
+            $xlsformTemplate->getRequiredMedia($odkLinkService);
             $xlsformTemplate->saveQuietly();
         });
     }
@@ -202,5 +203,25 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
     public function getOdkLink(): ?string
     {
         return config('odk-link.odk.url') . "/#/projects/" . $this->owner->odkProject->id . "/forms/" . $this->odk_id . "/draft";
+    }
+
+    /** 1 entry created for each required item as given from ODK Central */
+    public function requiredMedia(): HasMany
+    {
+        return $this->hasMany(RequiredMedia::class);
+    }
+
+    public function getRequiredMedia(OdkLinkService $odkLinkService): void
+    {
+        $mediaItems = $odkLinkService->getRequiredMedia($this);
+
+        foreach ($mediaItems as $mediaItem) {
+            $this->odkMedia()->updateOrCreate([
+                'name' => $mediaItem['name'],
+            ], [
+                'type' => $mediaItem['type'],
+                'exists_on_odk' => $mediaItem['exists'],
+            ]);
+        }
     }
 }

@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        /**
+         * Table to store the relationship link between app users and xlsforms (which forms is each app user assigned to?)
+         */
+        Schema::create('required_media', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('xlsform_template_id')->constrained('xlsform_templates');
+            $table->string('name');
+            $table->string('type');
+            $table->boolean('exists_on_odk')->default(false);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('required_media');
+    }
+};

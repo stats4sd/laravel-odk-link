@@ -3,6 +3,7 @@
 
 namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
+use Backpack\CRUD\app\Library\Widget;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -143,80 +144,84 @@ class XlsformTemplateCrudController extends CrudController
      */
     protected function setupUpdateOperation(): void
     {
-        $this->setupCreateOperation();
-
-        CRUD::removeField('xlsfile');
-        CRUD::removeField('create_header');
 
 
-        CRUD::field('xlsfile')
-            ->after('title')
-            ->type('upload')
-            ->upload(true)
-            ->validationRules('nullable');
+        // TODO: turn this into a custom "media operation"
+        Widget::add()->type('script')
+            ->content('assets/js/admin/xlsform_template_media.js');
 
-//        CRUD::field('media')
-//            ->type('upload_multiple')
-//            ->label('Add any static files that should be pushed to ODK Central as media attachments for this form')
-//            ->upload(true)
-//            ->validationRules('nullable');
-
-        CRUD::field('xlsform_draft_qr_string')
-            ->type('custom_html')
-            ->value('<div class="my-4 mx-3 d-flex justify-content-left">' .
-                QrCode::size(200)->generate($this->crud->getCurrentEntry()->draft_qr_code_string) . '</div>'
-            );
+        CRUD::field('draft_title')
+            ->type('section-title')
+            ->title('Review Form')
+            ->content('Your XLSform file has been uploaded to ODK Central. You can review the draft on ODK Collect using the QR Code below. <div class="my-4 mx-3 d-flex justify-content-center">' .
+                QrCode::size(100)->generate($this->crud->getCurrentEntry()->draft_qr_code_string) . '</div>')
+            ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
 
 
-        CRUD::field('csv_lookups')->type('repeatable')->subfields([
-            [
-                'name' => 'mysql_name',
-                'label' => 'MySQL Table Name',
-                'validationRules' => 'required',
-                'validationMessages' => [
-                    'required' => 'Please add the name of the MySQL view that holds the data for the CSV file.',
-                ]
-            ],
-            [
-                'name' => 'csv_name',
-                'label' => 'CSV File Name',
-                'validationRules' => 'required',
-                'validationMessages' => [
-                    'required' => 'Please add the name of the CSV file that should be attached to the ODK form.',
-                ]
-            ],
-            [
-                'name' => 'per_owner',
-                'type' => 'checkbox',
-                'label' => 'Does this csv file show owner-specific data?',
-                'hint' => '(Do different users or teams have different data for this csv lookup file?)',
-            ],
-            [
-                'name' => 'owner_foreign_key',
-                'type' => 'text',
-                'label' => 'Which column in the MySQL view or table references the owner of the form?',
-                'hint' => 'e.g. "team_id", or "user_id" ',
-            ],
-            [
-                'name' => 'external_file',
-                'type' => 'checkbox',
-                'label' => 'Is this file to be used with either a select_one_from_external or select_multiple_from_external question type?',
-                'hint' => 'If you are not sure, leave this unchecked!',
-            ],
-        ])->label('
-        <h4>Add Lookups from the Database</h4><br/>
-        <div class="bd-callout bd-callout-info font-weight-normal">
-            You should add the name of the MySQL Table or View, and the required name of the resulting CSV file. Every time you deploy this form, the platform will create a new version of the csv file using the data from the MySQL table or view you specify. This file will be uploaded to ODK Central as a form media attachment.
-            <br/><br/>
-            For example, if the form requires a csv lookup file called "households.csv", and the data is available in a view called "households_csv", then you should add an entry like this:
-            <ul>
-                <li>MySQL Table Name = households_csv</li>
-                <li>CSV File Name = households</li>
-            </ul>
-            CSV files can optionally be filtered to only show team-specific records. Use this for data that each team can customise themselves, or for data that should be filtered to a team\'s local context. For this to work, the MySQL table or view <b>must</b> have a "team_id" field to filter by.
-        </div>
-        ')->entity_singular('CSV Lookup reference');
+        CRUD::field('media_title')
+            ->type('section-title')
+            ->title('Form Attachments + Media')
+            ->content('ODK Central has identified that this form requires ' . $this->crud->getCurrentEntry()->requiredMedia()->count() . ' attachments. These are listed below. For images, videos and audio, please upload a file to be used. For "file" items, you can either upload a data file, or link it to a database table/view. If the data should be different for each team / form owner, it must be linked to the database.')
+            ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
 
+        CRUD::field('requiredMedia')
+            ->type('relationship')
+            ->subfields([
+                [
+                    'name' => 'name',
+                    'attributes' => [
+                        'disabled' => 'disabled'
+                    ],
+                ],
+                [
+                    'name' => 'type',
+                    'attributes' => [
+                        'disabled' => 'disabled'
+                    ],
+                ],
+                [
+                    'name' => 'static',
+                    'type' => 'checkbox',
+                    'label' => 'Is this file identical for all instances of this form?'
+                ],
+                [
+                    'name' => 'file_upload',
+                    'type' => 'upload',
+                    'label' => 'Please upload the file to be used. THis will be included with every instance of this form for all platform users.',
+                ],
+                [
+                    'name' => 'dynamic_file_info',
+                    'type' => 'section-title',
+                    'content' => 'For data files that should be contextualised, please add the following information.',
+                    'view_namespace' => 'stats4sd.laravel-backpack-section-title::fields',
+
+                ],
+                [
+                    'name' => 'mysql_name',
+                    'label' => 'MySQL Table/View Name',
+                    'hint' => 'Whenever a version of this form is deployed, a new csv file will be generated using the data from this specified database table or view.'
+                ],
+                [
+                    'name' => 'per_owner',
+                    'type' => 'checkbox',
+                    'label' => 'Does this csv file show owner-specific data?',
+                    'hint' => 'Do different users or teams have different data for this csv lookup file?',
+                ],
+                [
+                    'name' => 'owner_foreign_key',
+                    'type' => 'text',
+                    'label' => 'Which column in the MySQL view or table references the owner of the form?',
+                    'hint' => 'e.g. "team_id", or "user_id". The data included in the csv file will be filtered so that only the relevant data will be available in the form.',
+                ],
+                [
+                    'name' => 'external_file',
+                    'type' => 'checkbox',
+                    'label' => 'Is this file to be used with either a select_one_from_external or select_multiple_from_external question type?',
+                    'hint' => 'If you are not sure, leave this unchecked!',
+                ],
+            ])
+            ->min_rows($this->crud->getCurrentEntry()->requiredMedia()->count())
+            ->max_rows($this->crud->getCurrentEntry()->requiredMedia()->count());
     }
 
     public function setupShowOperation(): void
