@@ -10,13 +10,13 @@ return new class extends Migration {
         /**
          * Table to store the relationship link between app users and xlsforms (which forms is each app user assigned to?)
          */
-        Schema::create('required_media', function (Blueprint $table) {
+        Schema::create('odk_datasets', function (Blueprint $table) {
             $table->id();
-            $table->morphs('attachment');
-            $table->foreignId('xlsform_template_id')->constrained('xlsform_templates');
-            $table->string('name');
-            $table->string('type');
-            $table->boolean('exists_on_odk')->default(false);
+            $table->foreignId('dataset_id')->constrained('datasets');
+            $table->foreignId('odk_project_id');
+            $table->morphs('owner');
+            $table->string('name')->unique();
+            $table->json('properties')->nullable();
             $table->timestamps();
         });
     }

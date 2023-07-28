@@ -21,6 +21,12 @@ Route::group([
 
     Route::crud('xlsform-template', XlsformTemplateCrudController::class);
 
+    // DROPZONE sets up xlsform_template instead of xlsform-template for some reason:
+    Route::post('xlsform_template/dropzone/delete', [XlsformTemplateCrudController::class, 'dropzoneDelete']);
+    Route::post('xlsform_template/dropzone/upload', [XlsformTemplateCrudController::class, 'dropzoneUpload']);
+
+
+
     // Add a new route for XlSForm Template CRUD list view "Select" button
     Route::get('xlsform-template/{id}/select', [XlsformTemplateCrudController::class, 'select']);
 

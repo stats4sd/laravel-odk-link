@@ -1,6 +1,6 @@
 <h2 class="card-title">{{ $entry->title }}</h2>
+<div class="d-flex">
 
-<div class="row">
     <div class="col-md-12 col-xl-4">
         <div class="card">
             <div class="card-header">

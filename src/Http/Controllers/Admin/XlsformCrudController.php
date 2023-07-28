@@ -60,18 +60,10 @@ class XlsformCrudController extends CrudController
         CRUD::setDetailsRowView('odk-link::xlsforms.details_row');
 
         // TODO: update this to enable users to specify their own identifiable attributes for owners
-        CRUD::column('owner')->label('Owner')->type('relationship')->attribute('name');
+        CRUD::column('owner.name')->label('Owner')->type('relationship');
         CRUD::column('title');
         CRUD::column('xlsformTemplate')->type('relationship')->attribute('title');
-        CRUD::column('xlsfile')->type('upload')->disk(config('odk-link.storage.xlsforms'))->wrapper([
-            'href' => function ($crud, $column, $entry) {
-                if ($entry->xlsfile) {
-                    return Storage::disk(config('odk-link.storage.xlsforms'))->url($entry->xlsfile);
-                }
-
-                return '#';
-            },
-        ]);
+        CRUD::column('xlsfile')->type('upload')->disk(config('odk-link.storage.xlsforms'));
 
 
         CRUD::column('odk_id')->label('ODK Form ID')->wrapper([

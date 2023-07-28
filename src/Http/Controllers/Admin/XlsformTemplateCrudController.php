@@ -4,6 +4,7 @@
 namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
 use Backpack\CRUD\app\Library\Widget;
+use Backpack\Pro\Http\Controllers\Operations\DropzoneOperation;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -33,12 +34,13 @@ class XlsformTemplateCrudController extends CrudController
     use UpdateOperation;
     use DeleteOperation;
     use ShowOperation;
+    use DropzoneOperation;
 
     public function setup(): void
     {
         CRUD::setModel(XlsformTemplate::class);
         CRUD::setRoute(config('backpack.base.route_prefix') . '/xlsform-template');
-        CRUD::setEntityNameStrings('xlsform template', 'xlsform templates');
+        CRUD::setEntityNameStrings('xlsform-template', 'xlsform templates');
     }
 
     /**
@@ -52,15 +54,7 @@ class XlsformTemplateCrudController extends CrudController
         CRUD::column('title');
         CRUD::column('xlsformSubject')->label('Subject');
         CRUD::column('description');
-        CRUD::column('xlsfile')->type('upload')->wrapper([
-            'href' => function ($crud, $column, $entry) {
-                if ($entry->xlsfile) {
-                    return Storage::disk(config('odk-link.storage.xlsforms'))->url($entry->xlsfile);
-                }
-
-                return '#';
-            },
-        ]);
+        CRUD::column('xlsfile')->type('upload')->disk(config('odk-link.storage.xlsforms'));
         CRUD::column('media')->type('upload_multiple')->disk(config('odk-link.storage.xlsforms'));
         CRUD::column('csv_lookups')->type('table')->columns([
             'mysql_name' => 'MySQL Table/View',
@@ -144,7 +138,13 @@ class XlsformTemplateCrudController extends CrudController
      */
     protected function setupUpdateOperation(): void
     {
+        $qrString = 'temp';
+        $mediaCount = 0;
 
+        if($entry = $this->crud->getCurrentEntry()) {
+            $qrString = $entry->draft_qr_code_string;
+            $mediaCount = $entry->requiredMedia()->count();
+        }
 
         // TODO: turn this into a custom "media operation"
         Widget::add()->type('script')
@@ -154,14 +154,14 @@ class XlsformTemplateCrudController extends CrudController
             ->type('section-title')
             ->title('Review Form')
             ->content('Your XLSform file has been uploaded to ODK Central. You can review the draft on ODK Collect using the QR Code below. <div class="my-4 mx-3 d-flex justify-content-center">' .
-                QrCode::size(100)->generate($this->crud->getCurrentEntry()->draft_qr_code_string) . '</div>')
+                QrCode::size(100)->generate($qrString) . '</div>')
             ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
 
 
         CRUD::field('media_title')
             ->type('section-title')
             ->title('Form Attachments + Media')
-            ->content('ODK Central has identified that this form requires ' . $this->crud->getCurrentEntry()->requiredMedia()->count() . ' attachments. These are listed below. For images, videos and audio, please upload a file to be used. For "file" items, you can either upload a data file, or link it to a database table/view. If the data should be different for each team / form owner, it must be linked to the database.')
+            ->content('ODK Central has identified that this form requires ' . $mediaCount . ' attachments. These are listed below. For images, videos and audio, please upload a file to be used. For "file" items, you can either upload a data file, or link it to a database table/view. If the data should be different for each team / form owner, it must be linked to the database.')
             ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
 
         CRUD::field('requiredMedia')
@@ -186,8 +186,12 @@ class XlsformTemplateCrudController extends CrudController
                 ],
                 [
                     'name' => 'file_upload',
-                    'type' => 'upload',
+                    'type' => 'dropzone',
                     'label' => 'Please upload the file to be used. THis will be included with every instance of this form for all platform users.',
+                    'withMedia' => true,
+                    'configuration' => [
+                        'maxFiles' => 1,
+                    ]
                 ],
                 [
                     'name' => 'dynamic_file_info',
@@ -220,8 +224,8 @@ class XlsformTemplateCrudController extends CrudController
                     'hint' => 'If you are not sure, leave this unchecked!',
                 ],
             ])
-            ->min_rows($this->crud->getCurrentEntry()->requiredMedia()->count())
-            ->max_rows($this->crud->getCurrentEntry()->requiredMedia()->count());
+            ->min_rows($mediaCount)
+            ->max_rows($mediaCount);
     }
 
     public function setupShowOperation(): void
