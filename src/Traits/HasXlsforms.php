@@ -38,6 +38,7 @@ trait HasXlsforms
         return $this->morphMany(Xlsform::class, 'owner');
     }
 
+
     // Private templates are owned by a single form owner.
     // All owners have access to all public templates (templates where available = 1)
     public function xlsformTemplates(): MorphMany

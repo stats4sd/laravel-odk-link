@@ -40,12 +40,12 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
         // on creating, push the new form to ODK Central
         static::created(function (XlsformTemplate $xlsformTemplate) {
             $odkLinkService = app()->make(OdkLinkService::class);
+            $xlsformTemplate->owner()->associate(Platform::first());
 
             // update form title in xlsfile to match user-given title
             UpdateXlsformTitleInFile::dispatchSync($xlsformTemplate);
 
             // set the owner
-            $xlsformTemplate->owner()->associate(Platform::first());
 
             $xlsformTemplate->deployDraft($odkLinkService);
             $xlsformTemplate->getRequiredMedia($odkLinkService);
@@ -211,12 +211,25 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
         return $this->hasMany(RequiredMedia::class);
     }
 
+    /** filtered Required Media to only show media with type "image", "video" or "audio" */
+    public function requiredFixedMedia(): HasMany
+    {
+        return $this->hasMany(RequiredMedia::class)
+            ->where('required_media.type', '!=', 'file');
+    }
+
+    public function requiredDataMedia(): HasMany
+    {
+        return $this->hasMany(RequiredMedia::class)
+            ->where('required_media.type', '=', 'file');
+    }
+
     public function getRequiredMedia(OdkLinkService $odkLinkService): void
     {
         $mediaItems = $odkLinkService->getRequiredMedia($this);
 
         foreach ($mediaItems as $mediaItem) {
-            $this->odkMedia()->updateOrCreate([
+            $this->requiredMedia()->updateOrCreate([
                 'name' => $mediaItem['name'],
             ], [
                 'type' => $mediaItem['type'],

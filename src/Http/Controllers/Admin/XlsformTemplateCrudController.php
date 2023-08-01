@@ -7,6 +7,7 @@ use Backpack\CRUD\app\Library\Widget;
 use Backpack\Pro\Http\Controllers\Operations\DropzoneOperation;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -33,7 +34,6 @@ class XlsformTemplateCrudController extends CrudController
     use CreateOperation;
     use UpdateOperation;
     use DeleteOperation;
-    use ShowOperation;
     use DropzoneOperation;
 
     public function setup(): void
@@ -51,16 +51,42 @@ class XlsformTemplateCrudController extends CrudController
      */
     protected function setupListOperation(): void
     {
-        CRUD::column('title');
-        CRUD::column('xlsformSubject')->label('Subject');
-        CRUD::column('description');
-        CRUD::column('xlsfile')->type('upload')->disk(config('odk-link.storage.xlsforms'));
-        CRUD::column('media')->type('upload_multiple')->disk(config('odk-link.storage.xlsforms'));
-        CRUD::column('csv_lookups')->type('table')->columns([
-            'mysql_name' => 'MySQL Table/View',
-            'csv_name' => 'CSV File Name',
-        ]);
-        CRUD::column('available')->type('boolean')->label('Is the form available for live use?');
+        $owners = Str::plural(config('odk-link.owners.main_type'));
+
+        Widget::add()
+            ->type('card')
+            ->content([
+                'body' => "The table below lists all the ODK form templates that are available for users of the platform, and the status of each template. Individual {$owners} can deploy a version of these forms that only they have access to.",
+            ])
+            ->wrapper([
+                'class' => 'col-12 col-lg-6 mb-4',
+            ])
+            ->to('before_content');
+
+        CRUD::column('title')
+            ->label('Form Template Title')
+            ->type('custom_html')
+            ->value(function (XlsformTemplate $entry) {
+                $editUrl = backpack_url("xlsform-template/$entry->id/edit");
+
+                return "<a href='{$editUrl}'>$entry->title</a>";
+            });
+
+        CRUD::column('odk-link')
+            ->label('View on ODK')
+            ->type('custom_html')
+            ->value(function (XlsformTemplate $entry) {
+                return "<a href='{$entry->getOdkLink()}'>View on ODK Central</a>";
+            });
+        CRUD::column('requiredFixedMedia')
+            ->type('closure')
+            ->label('No. of Media items')
+            ->function(function ($entry) {
+                return "{$entry->requiredFixedMedia()->has('attachment')->count()} / {$entry->requiredFixedMedia()->count()}";
+
+            });
+        CRUD::column('requiredDataMedia')->type('relationship_count')->label('No. of data files');
+        CRUD::column('available')->type('boolean')->label('Form Ready?');
 
         CRUD::filter('xlsform_subject_id')
             ->type('select2')
@@ -76,6 +102,7 @@ class XlsformTemplateCrudController extends CrudController
         Crud::button('select')
             ->stack('line')
             ->view('odk-link::buttons.select');
+
     }
 
     /**
@@ -141,7 +168,7 @@ class XlsformTemplateCrudController extends CrudController
         $qrString = 'temp';
         $mediaCount = 0;
 
-        if($entry = $this->crud->getCurrentEntry()) {
+        if ($entry = $this->crud->getCurrentEntry()) {
             $qrString = $entry->draft_qr_code_string;
             $mediaCount = $entry->requiredMedia()->count();
         }
@@ -226,35 +253,6 @@ class XlsformTemplateCrudController extends CrudController
             ])
             ->min_rows($mediaCount)
             ->max_rows($mediaCount);
-    }
-
-    public function setupShowOperation(): void
-    {
-        $this->crud->set('show.setFromDb', false);
-
-        CRUD::column('title');
-        CRUD::column('xlsformSubject')->label('Subject');
-        CRUD::column('description')->limit(600);
-        CRUD::column('xlsfile')->type('upload')->wrapper([
-            'href' => function ($crud, $column, $entry) {
-                if ($entry->xlsfile) {
-                    return Storage::disk(config('odk-link.storage.xlsforms'))->url($entry->xlsfile);
-                }
-
-                return '#';
-            },
-        ]);
-        CRUD::column('media')->type('upload_multiple')->disk(config('odk-link.storage.xlsforms'));
-        CRUD::column('csv_lookups')->type('table')->columns([
-            'mysql_name' => 'MySQL Table/View',
-            'csv_name' => 'CSV File Name',
-        ]);
-        CRUD::column('available')->type('boolean')->label('Is the form available for live use?');
-
-        // add the "Select" button for "Select ODK Variables"
-        Crud::button('select')
-            ->stack('line')
-            ->view('odk-link::buttons.select');
     }
 
     // Select button, divert to a fully customized blade view file

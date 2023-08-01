@@ -50,6 +50,10 @@ return [
         'xlsform-admin' => env('XLSFORM_ADMIN_ROLE', 'admin'),
     ],
 
+    'owners' => [
+        'main_type' => env('MAIN_OWNER_TYPE', 'team'),
+    ],
+
     'submission' => [
 
         // The class and method used to process the submissions.

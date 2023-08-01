@@ -19,7 +19,7 @@ return new class extends Migration {
             $table->string('odk_draft_token')->nullable()->comment('ODK Central only: The current draft token, required to generate a QR code for testing the draft in ODK Collect');
             $table->string('has_draft')->nullable()->comment('Does the form have a deployed draft?');
             $table->string('enketo_draft_url')->nullable()->comment('url to the enketo version - pulled from the ODK service if supported/enabled');
-
+            $table->foreignId('xlsform_subject_id')->nullable()->change();
 
         });
 

@@ -13,9 +13,7 @@ return new class extends Migration {
         Schema::create('datasets', function (Blueprint $table) {
             $table->id();
             $table->string('name')->unique();
-            $table->string('mysql_name');
-            $table->boolean('per_owner')->default(true)->comment('When generating the csv files, should the data be filtered by form owner? (e.g., each team only receives the records that belong to them?');
-            $table->string('owner_foreign_key')->nullable()->comment('What is the field in the mysql database table/view that links to the owner? (e.g. "team_id")');
+            $table->string('entity_model')->nullable();
             $table->boolean('external_file')->default(false)->comment('Should the csv files generated be formatted to be used with "select_one_from_external" ODK fields?');
             $table->timestamps();
         });
