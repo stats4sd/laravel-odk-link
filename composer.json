@@ -19,8 +19,8 @@
         "php": "^8.0|^8.1",
         "ext-fileinfo": "*",
         "ext-zlib": "*",
-        "backpack/crud": "^5.2",
-        "backpack/pro": "^1.2",
+        "backpack/crud": "^5.2|^6.1.0",
+        "backpack/pro": "^1.2|^2.0",
         "livewire/livewire": "^2.10",
         "maatwebsite/excel": "^3.1.4",
         "simplesoftwareio/simple-qrcode": "^4.2",
@@ -37,7 +37,7 @@
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5|^10.0"
     },
     "autoload": {
         "psr-4": {
