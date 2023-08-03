@@ -106,7 +106,13 @@ class XlsformTemplateCrudController extends CrudController
             ->type('relationship')
             ->label('Xlsform subject - the data subject of the form')
             ->placeholder('Select the data subject of the form')
-            ->validationRules('required');
+            ->validationRules('required')
+        ->inline_create([
+            'entity' => 'xlsformSubject',
+            'modal_route' => route('xlsform-subject-inline-create'),
+            'create_route' => route('xlsform-subject-inline-create-save'),
+            'add_button_label' => 'Create new data subject',
+        ]);
 
         CRUD::field('media')
             ->type('upload_multiple')
@@ -231,7 +237,7 @@ class XlsformTemplateCrudController extends CrudController
         // convert selected fields from CSV to array
         $selectedFields = str_getcsv($entry->selected_fields);
 
-        return view('odk-link::xlsformtemplate.select-odk-variables', 
+        return view('odk-link::xlsformtemplate.select-odk-variables',
                     [
                         'entry' => $entry,
                         'surveySheet' => $surveySheet,

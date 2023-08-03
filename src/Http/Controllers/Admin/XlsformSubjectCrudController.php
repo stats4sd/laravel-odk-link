@@ -4,6 +4,7 @@
 namespace Stats4sd\OdkLink\Http\Controllers\Admin;
 
 use Backpack\CRUD\app\Library\Widget;
+use Backpack\Pro\Http\Controllers\Operations\InlineCreateOperation;
 use Stats4sd\OdkLink\Models\XlsformSubject;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
 use Backpack\CRUD\app\Http\Controllers\CrudController;
@@ -24,6 +25,7 @@ class XlsformSubjectCrudController extends CrudController
     use CreateOperation;
     use UpdateOperation;
     use DeleteOperation;
+    use InlineCreateOperation;
 
     public function setup(): void
     {
@@ -49,9 +51,9 @@ class XlsformSubjectCrudController extends CrudController
                         'body' => 'The table below shows the different data subject options for an xlsform template.'
                     ]
                 );
-                
+
         CRUD::column('name');
-        
+
     }
 
     /**
@@ -62,7 +64,14 @@ class XlsformSubjectCrudController extends CrudController
      */
     protected function setupCreateOperation(): void
     {
+        CRUD::field('description')
+            ->type('section-title')
+            ->title('Data Subjects')
+            ->content('Within this system, each form must have a "primary data subject". If you\'re not sure what that means, consider the question "what are you collecting data about"? It might be that your form collects data at multiple levels. If this is the case, then what is the main level? E.g., if you are collecting 1 submission per household, your data subject is probably "household", even if you have a section that asks questions to each household member in turn. If you are collecting 1 submission per household member, your data subject is probably "household member"')
+            ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
+
         CRUD::field('name')
+            ->label('What is the name or label for the data subject?')
             ->validationRules('required');
 
     }
