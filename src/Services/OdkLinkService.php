@@ -162,7 +162,7 @@ class OdkLinkService
      * @return array $xlsformDetails
      * @throws RequestException
      */
-    public function createDraftForm(WithXlsFormDrafts $xlsform): array
+    public function createDraftForm(WithXlsFormDrafts $xlsform): ?array
     {
         $token = $this->authenticate();
 
@@ -181,9 +181,17 @@ class OdkLinkService
                 'X-XlsForm-FormId-Fallback' => Str::slug($xlsform->title),
             ])
             ->withBody($file, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->post($url)
-            ->throw()
-            ->json();
+            ->post($url);
+
+        // If the file fails to compile, a 400 error is returned.
+        if(!$response->ok()) {
+            $response = $response->json();
+            $xlsform->odk_error = $response['details']['error'] ?? 'Something went wrong when uploading the ODK form. Please try again.';
+            $xlsform->saveQuietly();
+            return null;
+        }
+
+        $response = $response->json();
 
         // when creating a new draft for an existing form, the full form details are not returned. In this case, the $xlsform record can remain unchanged
         if (isset($response['xmlFormId'])) {
@@ -488,7 +496,6 @@ class OdkLinkService
             ->throw()
             ->json();
 
-        dd($response);
     }
 
 

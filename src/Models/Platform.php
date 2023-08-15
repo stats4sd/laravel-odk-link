@@ -15,7 +15,6 @@ use Stats4sd\OdkLink\Traits\IsOdkEntity;
 class Platform extends Model
 {
     use HasXlsforms;
-    use IsOdkEntity;
 
     protected $table = 'platforms';
     protected $guarded = [];

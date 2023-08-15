@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use Stats4sd\OdkLink\Models\Interfaces\WithXlsFormDrafts;
 use Stats4sd\OdkLink\Services\OdkLinkService;
+use Symfony\Contracts\Service\Attribute\Required;
 
 class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
 {
@@ -165,13 +166,15 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
 
         $odkXlsFormDetails = $service->createDraftForm($this);
 
-        $this->updateQuietly([
-            'odk_id' => $odkXlsFormDetails['xmlFormId'],
-            'odk_draft_token' => $odkXlsFormDetails['draftToken'],
-            'odk_version_id' => $odkXlsFormDetails['version'],
-            'has_draft' => true,
-            'enketo_draft_url' => $odkXlsFormDetails['enketoId'],
-        ]);
+        if ($odkXlsFormDetails) {
+            $this->updateQuietly([
+                'odk_id' => $odkXlsFormDetails['xmlFormId'],
+                'odk_draft_token' => $odkXlsFormDetails['draftToken'],
+                'odk_version_id' => $odkXlsFormDetails['version'],
+                'has_draft' => true,
+                'enketo_draft_url' => $odkXlsFormDetails['enketoId'],
+            ]);
+        }
     }
 
     /**
@@ -222,6 +225,20 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
     {
         return $this->hasMany(RequiredMedia::class)
             ->where('required_media.type', '=', 'file');
+    }
+
+    public function attachedFixedMedia(): HasMany
+    {
+        return $this->hasMany(RequiredMedia::class)
+            ->where('required_media.type', '!=', 'file')
+            ->where('required_media.attachment_id', '!=', null);
+    }
+
+    public function attachedDataMedia(): HasMany
+    {
+        return $this->hasMany(RequiredMedia::class)
+            ->where('required_media.type', '=', 'file')
+            ->where('required_media.attachment_id', '!=', null);
     }
 
     public function getRequiredMedia(OdkLinkService $odkLinkService): void

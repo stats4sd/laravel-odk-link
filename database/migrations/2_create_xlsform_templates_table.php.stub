@@ -26,6 +26,7 @@ return new class extends Migration {
             $table->string('has_draft')->nullable()->comment('Does the form have a deployed draft?');
             $table->string('enketo_draft_url')->nullable()->comment('url to the enketo version - pulled from the ODK service if supported/enabled');
 
+            $table->text('odk_error')->nullable()->comment('If a xlsfile upload results in an ODK syntax error, it will be stored here. For working forms, this will be null');
 
             $table->softDeletes();
         });
