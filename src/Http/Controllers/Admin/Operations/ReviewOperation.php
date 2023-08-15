@@ -27,9 +27,17 @@ trait ReviewOperation
 
     public function getReviewForm(int $id = null)
     {
+
+        $entry = $this->crud->getCurrentEntry();
+
+        if ($entry?->odk_error) {
+            \Alert::add('danger', 'Your XLS Form file has one or more errors. Please review the file and upload a revised version before continuing the review.')->flash();
+
+            return redirect(backpack_url("xlsform-template/{$entry?->id}/edit"));
+        }
+
         return $this->formView($id);
     }
-
 
 
 }

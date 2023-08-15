@@ -34,9 +34,9 @@ class XlsformTemplateCrudController extends CrudController
     use ListOperation;
     use CreateOperation;
     use UpdateOperation;
-    use DeleteOperation;
     use DropzoneOperation;
     use ReviewOperation;
+    use DeleteOperation;
 
     public function setup(): void
     {
@@ -90,7 +90,7 @@ class XlsformTemplateCrudController extends CrudController
 
 
                 // if the template has not yet been successfully uploaded
-                if(!$entry->odk_id) {
+                if (!$entry->odk_id) {
                     return '-';
                 }
 
@@ -104,7 +104,7 @@ class XlsformTemplateCrudController extends CrudController
             ->function(function (XlsformTemplate $entry) {
 
                 // if the template has not yet been successfully uploaded
-                if(!$entry->odk_id){
+                if (!$entry->odk_id) {
                     return '-';
                 }
 
@@ -113,13 +113,13 @@ class XlsformTemplateCrudController extends CrudController
 
 
         CRUD::column('available')->type('custom_html')->label('Form Status')
-        ->value(function(XlsformTemplate $entry) {
-            if($entry->odk_error) {
-                return "<span class='text-danger'>XLSFORM ERROR</span>";
-            }
+            ->value(function (XlsformTemplate $entry) {
+                if ($entry->odk_error) {
+                    return "<span class='text-danger'>XLSFORM ERROR</span>";
+                }
 
-            return $entry->available ? "Available" : "Pending";
-        });
+                return $entry->available ? "Available" : "Pending";
+            });
 
 //        CRUD::filter('xlsform_subject_id')
 //            ->type('select2')
@@ -160,6 +160,14 @@ class XlsformTemplateCrudController extends CrudController
             ')
             ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
 
+        if ($error = CRUD::getCurrentEntry()?->odk_error ?? false) {
+            CRUD::field('error_display')
+                ->type('section-title')
+                ->view_namespace('stats4sd.laravel-backpack-section-title::fields')
+                ->variant('danger')
+                ->content("<h4>XLSForm Error reported by ODK Central</h4>{$error}");
+        }
+
         CRUD::field('title')
             ->validationRules('required|max:255');
 
@@ -185,22 +193,32 @@ class XlsformTemplateCrudController extends CrudController
 
     protected function setupReviewOperation(): void
     {
-        $qrString = 'temp';
+        $entry = $this->crud->getCurrentEntry();
 
-        if ($entry = $this->crud->getCurrentEntry()) {
-            $qrString = $entry->draft_qr_code_string;
+        $qrString = $entry?->draft_qr_code_string ?? null;
+
+        if ($qrString) {
+
+            CRUD::field('draft_title')
+                ->type('section-title')
+                ->title("Review Form - {$entry?->title}")
+                ->content("Your XLSform file has been uploaded to ODK Central. You can review the draft using ODK Collect or Enketo. We recommend previewing the form with the same tool that will be used for data collection, because Enketo and ODK Collect render the same form in quite different ways. <br/><br/>
+
+                    Note that this is not intended to be used for any real data collection. No submissions are kept from these forms. You may also find the form does not work properly if there are missing media files or datasets.<br/><br/>
+                    <h3>Preview in ODK Collect</h3>
+                    In ODK Collect, go to 'add new project' and then scan the QR code below. THis will create a new project with <b>only</b> this form. Once you have finished testing the form, you can delete that entire project from ODK Collect to keep your project list tidy.
+                    <div class='my-4 mx-3 d-flex justify-content-start'>" .
+                        QrCode::size(200)->generate($qrString) .
+                    "</div>
+                    <h3 class='mt-4'>Preview in Enketo</h3>
+                    <a href='" .
+                        config('odk-link.odk.url') .
+                        "/-/{$entry->enketo_draft_url}' target='_blank'>Preview the form in Enketo webforms here</a>.
+
+                    ")
+                ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
+
         }
-
-        // TODO: turn this into a custom "media operation"
-        Widget::add()->type('script')
-            ->content('assets/js/admin/xlsform_template_media.js');
-
-        CRUD::field('draft_title')
-            ->type('section-title')
-            ->title("Review Form - {$entry?->title}")
-            ->content('Your XLSform file has been uploaded to ODK Central. You can review the draft on ODK Collect using the QR Code below. <div class="my-4 mx-3 d-flex justify-content-center">' .
-                QrCode::size(100)->generate($qrString) . '</div>')
-            ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
 
 
     }

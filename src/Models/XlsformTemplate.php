@@ -202,6 +202,31 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
 
     }
 
+    public function getEnketoDraftUrlAttribute($value): ?string
+    {
+        if($value) {
+            return $value;
+        }
+
+        // if there is no enketo url in the database, retrieve it from ODK Central
+        $odkLinkService = app()->make(OdkLinkService::class);
+
+        $this->updateDraftFormDetails($odkLinkService);
+
+        return $this->attributes['enketo_draft_url'];
+
+    }
+
+    public function updateDraftFormDetails(OdkLinkService $odkLinkService)
+    {
+        $updated = $odkLinkService->getDraftFormDetails($this);
+
+        $this->update([
+            'odk_draft_token' => $updated['draftToken'],
+            'enketo_draft_url' => $updated['enketoId'],
+        ]);
+    }
+
 
     public function getOdkLink(): ?string
     {
