@@ -29,4 +29,13 @@ class RequiredMedia extends Model implements HasMedia
         return $this->morphTo();
     }
 
+    public function getImageUrlAttribute()
+    {
+        if($this->attachment_type === "Spatie\MediaLibrary\MediaCollections\Models\Media") {
+            return $this->attachment->getUrl();
+        }
+
+        return '';
+    }
+
 }

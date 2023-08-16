@@ -3,6 +3,8 @@
 namespace Stats4sd\OdkLink\Http\Controllers\Admin\Operations;
 
 use Backpack\CRUD\app\Http\Controllers\Operations\Concerns\HasForm;
+use Stats4sd\OdkLink\Models\Xlsform;
+use Stats4sd\OdkLink\Models\XlsformTemplate;
 
 trait ReviewOperation
 {
@@ -23,6 +25,8 @@ trait ReviewOperation
     protected function setupReviewDefaults(): void
     {
         $this->formDefaults(operationName: 'Review');
+
+        $this->crud->setupDefaultSaveActions();
     }
 
     public function getReviewForm(int $id = null)
@@ -36,7 +40,56 @@ trait ReviewOperation
             return redirect(backpack_url("xlsform-template/{$entry?->id}/edit"));
         }
 
+        $id = $this->crud->getCurrentEntryId() ?? $id;
+        // get the info for that entry
+
+        $this->data['entry'] = $this->crud->getEntryWithLocale($id);
+        $this->crud->setOperationSetting('fields', $this->crud->getUpdateFields());
+
+        $this->data['crud'] = $this->crud;
+        $this->data['title'] = $this->crud->getTitle() ?? trans('backpack::crud.edit') . ' ' . $this->crud->entity_name;
+        $this->data['id'] = $id;
+
+        $this->crud->removeSaveActions(['save_and_edit', 'save_and_show', 'save_and_new', 'save_and_preview']);
+
         return $this->formView($id);
+    }
+
+    public function postReviewForm()
+    {
+        $request = request();
+        $entry = XlsformTemplate::find($this->crud->getCurrentEntryId());
+
+        //handle media file attachments
+
+
+        $form = $request->all();
+
+        $files = $request->allFiles();
+
+
+
+        if(array_key_exists('requiredFixedMedia', $files)) {
+            $fixedMedia = $form['requiredFixedMedia'];
+
+            foreach($fixedMedia as $index => $fixedMediaItem) {
+
+                $requiredMediaItem = $entry->requiredFixedMedia()->find($fixedMediaItem['id']);
+
+                $requiredMediaItem->addMediaFromRequest("requiredFixedMedia.{$index}.file_upload")
+                ->toMediaLibrary();
+
+                $requiredMediaItem->attachment()->associate($requiredMediaItem->getMedia()->first());
+                $requiredMediaItem->save();
+            }
+
+
+
+        }
+
+        dd('??', $files);
+
+
     }
 
 
