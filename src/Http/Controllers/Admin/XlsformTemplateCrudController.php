@@ -36,7 +36,6 @@ class XlsformTemplateCrudController extends CrudController
     use CreateOperation;
     use UpdateOperation;
     use DropzoneOperation;
-    use ReviewOperation;
     use DeleteOperation;
 
     public function getCurrentEntry(): ?XlsformTemplate
@@ -203,114 +202,8 @@ class XlsformTemplateCrudController extends CrudController
         $this->setupCreateOperation();
     }
 
-    protected function setupReviewOperation(): void
-    {
-        $entry = $this->getCurrentEntry();
-        $qrString = $entry?->draft_qr_code_string ?? null;
-
-        // needed because all the fields below need to be able to render even when there isn't a 'current entity' e.g. for Ajax calls and other such nonsense.
-        if($qrString) {
-            $qrCode = QrCode::size(200)->generate($qrString);
-        } else {
-            $qrCode = '';
-        }
-
-        CRUD::field('steps_info')
-            ->type('section-title')
-            ->view_namespace('stats4sd.laravel-backpack-section-title::fields')
-            ->content("
-            <h2>Prepare Your ODK Form Template</h2>
-            <p>This page guides you through the steps required to complete your ODK form template and allow platform users to use it for their data collection. Please follow the steps below to check what is needed to complete your form.</p>
-        ");
-
-
-        // PREVIEW FORM TAB
-
-
-        CRUD::field('draft_title')
-            ->tab('Preview Form')
-            ->type('section-title')
-            ->view_namespace('stats4sd.laravel-backpack-section-title::fields')
-            ->title("Review Form - {$entry?->title}")
-            ->content("Your XLSform file has been uploaded to ODK Central. You can review the draft using ODK Collect or Enketo. We recommend previewing the form with the same tool that will be used for data collection, because Enketo and ODK Collect render the same form in quite different ways. <br/><br/>
-
-                    Note that this is not intended to be used for any real data collection. No submissions are kept from these forms. You may also find the form does not work properly if there are missing media files or datasets.<br/><br/>
-                    <h3>Preview in ODK Collect</h3>
-                    In ODK Collect, go to 'add new project' and then scan the QR code below. THis will create a new project with <b>only</b> this form. Once you have finished testing the form, you can delete that entire project from ODK Collect to keep your project list tidy.
-                    <div class='my-4 mx-3 d-flex justify-content-start'>" .
-                $qrCode .
-                "</div>
-                    <h3 class='mt-4'>Preview in Enketo</h3>
-                    <a href='" .
-                config('odk-link.odk.url') .
-                "/-/{$entry?->enketo_draft_url}' target='_blank'>Preview the form in Enketo webforms here</a>.
-
-                    ");
-
-        // STATIC MEDIA TAB
-
-        CRUD::field('media_title')
-            ->tab('MEDIA FILE ATTACHMENTS')
-            ->type('section-title')
-            ->view_namespace('stats4sd.laravel-backpack-section-title::fields')
-            ->content("
-                   <h3>Media Attachments</h3>
-                   <p>Your form requires {$entry?->requiredFixedMedia()->count()} fixed media attachments. These are images, audio or videos that are referencd in the XlsForm you uploaded. Please ensure you upload any required files below.</p>
-            ");
-
-        CRUD::field('requiredFixedMedia')
-            ->tab('MEDIA FILE ATTACHMENTS')
-            ->type('relationship')
-            ->subfields([
-                [
-                    'name' => 'name',
-                    'attributes' => [
-                        'disabled' => 'disabled'
-                    ],
-                    'wrapper' => [
-                        'class' => 'form-group col-12 col-md-6'
-                    ],
-                ],
-                [
-                    'name' => 'type',
-                    'attributes' => [
-                        'disabled' => 'disabled'
-                    ],
-                    'wrapper' => [
-                        'class' => 'form-group col-12 col-md-6'
-                    ],
-                ],
-                [
-                    'name' => 'image_url',
-                    'type' => 'closure',
-                    'function' => function($value) {
-//                            return "<img src='" . Storage::disk(config('odk-link.storage.xlsforms'))
-//                        ->url($entry?->requiredFixedMedia->);
-
-                        return $value;
-                    },
-                    'wrapper' => [
-                        'class'  => 'form-group col-12 col-md-6',
-                    ],
-                    'view_namespace' => 'odk-link::fields',
-                ],
-                [
-                    'name' => 'file_upload',
-                    'type' => 'upload',
-                    'label' => 'Upload a file. This will replace any existing file, and will be shared with every instance of this form.',
-                    'wrapper' => [
-                        'class' => 'form-group col-12 col-md-6'
-                    ],
-                ],
-            ])
-            ->min_rows($entry?->requiredFixedMedia()->count())
-            ->max_rows($entry?->requiredFixedMedia()->count());
-
-    }
-
-// Select button, divert to a fully customized blade view file
-    public
-    function select()
+    // Select button, divert to a fully customized blade view file
+    public function select()
     {
         $entry = CRUD::getCurrentEntry();
 
@@ -332,9 +225,8 @@ class XlsformTemplateCrudController extends CrudController
         );
     }
 
-// handle the form submission for user selected ODK variables
-    public
-    function submitSelectedFields(Request $request)
+    // handle the form submission for user selected ODK variables
+    public function submitSelectedFields(Request $request)
     {
         // get all form data from POST request
         $data = $request->all();
