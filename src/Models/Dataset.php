@@ -4,6 +4,7 @@
 namespace Stats4sd\OdkLink\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Stats4sd\OdkLink\Traits\HasXlsforms;
@@ -28,6 +29,11 @@ class Dataset extends Model
     public function odkDatasets(): HasMany
     {
         return $this->hasMany(OdkDataset::class);
+    }
+
+    public function variables(): HasMany
+    {
+        return $this->hasMany(DatasetVariable::class);
     }
 
 }

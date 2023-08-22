@@ -29,6 +29,15 @@ class RequiredMedia extends Model implements HasMedia
         return $this->morphTo();
     }
 
+    public function getDatasetAttribute()
+    {
+        if($this->attachment_type === "Stats4sd\\OdkLink\\Models\\Dataset") {
+            return $this->attachment;
+        }
+
+        return null;
+    }
+
     public function getImageUrlAttribute()
     {
         if($this->attachment_type === "Spatie\MediaLibrary\MediaCollections\Models\Media") {

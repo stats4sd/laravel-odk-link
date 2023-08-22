@@ -12,35 +12,6 @@
 
     @foreach($xlsformTemplate->requiredFixedMedia as $requiredMedia)
 
-        <div class="card mb-2">
-            <div class="card-header">
-                <h3 class="mb-0">{{ $requiredMedia->name }} ( {{ $requiredMedia->type }} file ) </h3>
-            </div>
-
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 col-12 d-flex justify-content-center">
-                        @if($requiredMedia->has('attachment'))
-                            @if($requiredMedia->type === "image")
-                                <img src="{{ $requiredMedia->attachment->getUrl() }}" width="200"/>
-                            @elseif($requiredMedia->type === "audio")
-                                ~~ AUDIO PREVIEW ~~
-                            @elseif($requiredMedia->type === "video")
-                                ~~ VIDEO PREVIEW ~~
-                            @endif
-                        @else
-                            ~~ Preview will appear here after upload ~~
-                        @endif
-                    </div>
-                    <div class="col-md-6 col-12 d-flex align-items-center">
-                        <div class="form-input-group">
-                            <label class="form-label" for="required_media__{{$requiredMedia->id}}">Add or replace file:</label>
-                            <input class="form-input" type="file" name="required_media__{{$requiredMedia->id}}"/>
-                        </div>
-                    </div>
-                </div>
-                <button type="submit" class="btn btn-primary">Save</button>
-            </div>
-        </div>
+        <livewire:odk-link::required-fixed-media-uploader :required-media="$requiredMedia"/>
 
     @endforeach

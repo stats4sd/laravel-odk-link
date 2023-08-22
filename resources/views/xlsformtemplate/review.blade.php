@@ -17,7 +17,7 @@
             <div class="card-header">
                 <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="review-tab" data-bs-toggle="tab" data-bs-target="#review-tab-pane" type="button" role="tab" aria-controls="review-tab-pane" aria-selected="true">
+                        <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review-tab-pane" type="button" role="tab" aria-controls="review-tab-pane" aria-selected="true">
                             <h3 class="mb-0">REVIEW FORM</h3>
                         </button>
                     </li>
@@ -27,7 +27,7 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="data-media-tab" data-bs-toggle="tab" data-bs-target="#data-media-tab-pane" type="button" role="tab" aria-controls="data-media-tab-pane" aria-selected="false">
+                        <button class="nav-link active" id="data-media-tab" data-bs-toggle="tab" data-bs-target="#data-media-tab-pane" type="button" role="tab" aria-controls="data-media-tab-pane" aria-selected="false">
                             <h3 class="mb-0">ATTACHED DATASETS</h3>
                         </button>
                     </li>
@@ -40,13 +40,13 @@
             </div>
             <div class="card-body">
                 <div class="tab-content" id="myTabContent">
-                    <div class="tab-pane fade show active" id="review-tab-pane" role="tabpanel" aria-labelledby="review-tab" tabindex="0">
+                    <div class="tab-pane fade" id="review-tab-pane" role="tabpanel" aria-labelledby="review-tab" tabindex="0">
                         @include('odk-link::xlsformtemplate._review')
                     </div>
                     <div class="tab-pane fade" id="fixed-media-tab-pane" role="tabpanel" aria-labelledby="fixed-media-tab" tabindex="0">
                         @include('odk-link::xlsformtemplate._attached-media')
                     </div>
-                    <div class="tab-pane fade" id="data-media-tab-pane" role="tabpanel" aria-labelledby="data-media-tab" tabindex="0">
+                    <div class="tab-pane fade show active" id="data-media-tab-pane" role="tabpanel" aria-labelledby="data-media-tab" tabindex="0">
                         @include('odk-link::xlsformtemplate._attached-datasets')
                     </div>
                     <div class="tab-pane fade" id="structure-tab-pane" role="tabpanel" aria-labelledby="structure-tab" tabindex="0">

@@ -12,6 +12,10 @@ use Stats4sd\OdkLink\Commands\CreateMissingOdkProjects;
 use Stats4sd\OdkLink\Commands\CreatePlatformTestProject;
 use Stats4sd\OdkLink\Commands\GenerateSubmissionRecords;
 use Stats4sd\OdkLink\Commands\UpdateSubmissionsToUseIntegerIds;
+use Stats4sd\OdkLink\Livewire\DatasetVariable;
+use Stats4sd\OdkLink\Livewire\RequiredDataMedia;
+use Stats4sd\OdkLink\Livewire\RequiredDataMediaUploader;
+use Stats4sd\OdkLink\Livewire\RequiredFixedMediaUploader;
 use Stats4sd\OdkLink\Services\OdkLinkService;
 
 class OdkLinkServiceProvider extends PackageServiceProvider
@@ -58,7 +62,11 @@ class OdkLinkServiceProvider extends PackageServiceProvider
 
     public function bootingPackage(): void
     {
-        Livewire::component('owner-forms-table', OwnerFormsTable::class);
+        Livewire::component('odk-link::required-fixed-media-uploader', RequiredFixedMediaUploader::class);
+        Livewire::component('odk-link::required-data-media-uploader', RequiredDataMediaUploader::class);
+        Livewire::component('odk-link::required-data-media', RequiredDataMedia::class);
+        Livewire::component('odk-link::dataset-variable', DatasetVariable::class);
+
 
     }
 

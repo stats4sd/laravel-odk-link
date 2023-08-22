@@ -147,6 +147,10 @@ class XlsformTemplateCrudController extends CrudController
 //            ->stack('line')
 //            ->view('odk-link::buttons.select');
 
+        CRUD::button('review')
+            ->stack('line')
+            ->view('odk-link::buttons.xlsformtemplate.review');
+
     }
 
     /**
