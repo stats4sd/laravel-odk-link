@@ -502,9 +502,6 @@ class OdkLinkService
             $class = config('odk-link.submission.process_method.class');
             $method = config('odk-link.submission.process_method.method');
 
-            if ($class && $method) {
-                $class::$method($submission);
-            }
 
             //check if media is expected
             if ($entry['__system']['attachmentsPresent'] > 0) {
@@ -531,6 +528,10 @@ class OdkLinkService
                     ->toMediaLibrary();
 
                 }
+            }
+
+            if ($class && $method) {
+                $class::$method($submission);
             }
 
 
