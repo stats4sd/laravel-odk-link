@@ -477,7 +477,7 @@ class OdkLinkService
 
 
         // only process new submissions
-        $resultsToAdd = Collect($results['value'])->whereNotIn('__id', $xlsform->submissions->pluck('id')->toArray());
+        $resultsToAdd = Collect($results['value'])->whereNotIn('__id', $xlsform->submissions->pluck('odk_id')->toArray());
 
 
         foreach ($resultsToAdd as $entry) {
