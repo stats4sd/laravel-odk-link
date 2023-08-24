@@ -129,6 +129,15 @@ class SubmissionCrudController extends CrudController
                 }
             }
 
+
+            // replace any media item file name with a link to the item.
+            foreach($entry->getMedia() as $mediaItem) {
+                if($value === $mediaItem->file_name) {
+                    $value = "<a href='{$mediaItem->getUrl()}'>{$mediaItem->file_name}</a>";
+                    break;
+                }
+            }
+
             $output .= '
                 <tr>
                     <td>' . $key . '</td>
@@ -136,13 +145,6 @@ class SubmissionCrudController extends CrudController
                 </tr>
                 ';
         }
-
-        // hack to add media links to data presented in table.
-        // This whole section should be re-worked based on the xlsformversion Schema!
-        foreach($entry->getMedia() as $mediaItem) {
-            $output = str_replace($mediaItem->file_name, "<a href='{$mediaItem->getUrl()}'>{$mediaItem->file_name}<a/>", $output);
-        }
-
 
         $output .= '</table>';
 
