@@ -37,7 +37,6 @@ class RequiredDataMedia extends Component
         $this->datasetName = $this->dataset?->name ?? '';
         $this->datasetModel = $this->dataset?->entity_model ?? '';
 
-        $this->dataset->load('variables');
     }
 
 

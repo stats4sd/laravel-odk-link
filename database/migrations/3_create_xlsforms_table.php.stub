@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->string('enketo_url')->nullable()->comment('url to the enketo version - pulled from the ODK service if supported/enabled');
             $table->boolean('processing')->default(0)->comment('Is the form currently being processed? (helps to avoid duplicate deployments)');
 
+            $table->json('schema')->nullable();
             $table->text('odk_error')->nullable()->comment('If an xlsfile upload returns an error from the ODK Aggregate service, it will be stored here');
             $table->timestamps();
         });

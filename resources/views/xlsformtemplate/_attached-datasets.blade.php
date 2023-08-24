@@ -12,6 +12,6 @@
 
     @foreach($xlsformTemplate->requiredDataMedia as $requiredMedia)
 
-        <livewire:odk-link::required-data-media :required-media="$requiredMedia"/>
+        <livewire:odk-link::required-data-media wire:key="{{ $requiredMedia->id }}" :required-media="$requiredMedia"/>
 
     @endforeach

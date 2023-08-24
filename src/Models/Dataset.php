@@ -36,4 +36,14 @@ class Dataset extends Model
         return $this->hasMany(DatasetVariable::class);
     }
 
+    public function datasets(): BelongsToMany
+    {
+        return $this->belongsToMany(XlsformTemplate::class)
+            ->withPivot([
+                'is_root',
+                'is_repeat',
+                'structure_item'
+            ]);
+    }
+
 }

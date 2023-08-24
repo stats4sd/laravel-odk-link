@@ -63,11 +63,10 @@
             </div>
     </div>
 
-    @teleport('body')
+
     <!-- Include these scripts somewhere on the page: -->
     <script defer src="https://unpkg.com/@alpinejs/ui@3.12.3-beta.0/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/@alpinejs/focus@3.12.3/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/alpinejs@3.12.3/dist/cdn.min.js"></script>
 
-    @endteleport
 </div>

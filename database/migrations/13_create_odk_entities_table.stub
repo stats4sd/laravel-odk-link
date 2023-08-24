@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         /**
@@ -35,13 +36,24 @@ return new class extends Migration {
             $table->timestamps();
 
         });
-    }
+
+        // link table for dataset<-->xlsformtemplates
+        Schema::create('dataset_xlsform_template', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('dataset_id')->constrained('datasets');
+            $table->foreignId('xlsform_template_id')->constrained('xlsform_templates');
+            $table->string('structure_item')->comment('which schema structure item (group or repeat) is this dataset linked to in the form?');
+            $table->boolean('is_repeat')->default(false)->comment('Is this dataset linked to a repeat_group structure item?');
+            $table->boolean('is_root')->default(false)->comment('Is this dataset the "root" dataset for the form? (i.e. is this the main data subject?');
+        });
+    })
+}
 
     public function down(): void
-    {
-        Schema::dropIfExists('entities');
-        Schema::dropIfExists('entity_values');
-        Schema::dropIfExists('dataset_variables');
+{
+    Schema::dropIfExists('entities');
+    Schema::dropIfExists('entity_values');
+    Schema::dropIfExists('dataset_variables');
 
-    }
+}
 };

@@ -3,6 +3,7 @@
 
 namespace Stats4sd\OdkLink\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Arr;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Backpack\CRUD\app\Models\Traits\CrudTrait;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Str;
 use JsonException;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -34,6 +36,7 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
     protected $casts = [
         'media' => 'array',
         'csv_lookups' => 'array',
+        'schema' => 'collection',
     ];
 
     protected static function booted()
@@ -278,5 +281,38 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
                 'exists_on_odk' => $mediaItem['exists'],
             ]);
         }
+    }
+
+
+    //  get the schema fields that are present in any groups or repeats;
+    public function getStructureAttribute()
+    {
+        return $this->schema->filter(fn($item) => $item['type'] === 'structure')
+            ->map(function($item) {
+                $item['sub_items'] = $this->schema->filter(fn($subItem) => Str::contains($subItem['path'], $item['path']) && $subItem['path'] !== $item['path']);
+
+                return $item;
+            });
+    }
+
+    // get all schema fields that are on the 'root' of the structure. (i.e. fields that will appear in the main 'survey' tab in a combined download)
+    public function getRootFieldsAttribute()
+    {
+        return $this->schema->filter(fn($item) => $item['type'] !== 'structure' && $item['path'] === "/{$item['name']}");
+    }
+
+    public function datasets(): BelongsToMany
+    {
+        return $this->belongsToMany(Dataset::class)
+            ->withPivot([
+                'is_root',
+                'is_repeat',
+                'structure_item'
+            ]);
+    }
+
+    public function getRootDatasetIdAttribute()
+    {
+        return $this->datasets->filter(fn($dataset)  =>  $dataset->pivot->is_root)->first()?->id;
     }
 }

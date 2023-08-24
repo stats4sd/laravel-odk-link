@@ -184,7 +184,7 @@ class OdkLinkService
             ->post($url);
 
         // If the file fails to compile, a 400 error is returned.
-        if(!$response->ok()) {
+        if (!$response->ok()) {
             $response = $response->json();
             $xlsform->odk_error = $response['details']['error'] ?? 'Something went wrong when uploading the ODK form. Please try again.';
             $xlsform->saveQuietly();
@@ -198,9 +198,14 @@ class OdkLinkService
             $xlsform->update(['odk_id' => $response['xmlFormId']]);
         }
 
-        // deploy media files
-        // TEMPORARILY REMOVED FOR XLSFORM TEMPLATE TESTING
-        // $this->uploadMediaFileAttachments($xlsform);
+
+        // upddate the stored schema with the new draft;
+        $schema = Http::withToken($token)
+            ->get("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/draft/fields?odata=true")
+            ->throw()
+            ->json();
+
+        $xlsform->update(['schema' => $schema]);
 
 
         return $this->getDraftFormDetails($xlsform);
