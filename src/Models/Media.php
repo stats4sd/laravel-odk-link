@@ -4,7 +4,7 @@ namespace Stats4sd\OdkLink\Models;
 
 class Media extends \Spatie\MediaLibrary\MediaCollections\Models\Media
 {
-    protected $table = 'odk_media';
+    protected $table = 'media';
 
 
 }
