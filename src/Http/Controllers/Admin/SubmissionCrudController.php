@@ -168,13 +168,6 @@ class SubmissionCrudController extends CrudController
             }
         }
 
-        // delete any existing media files linked to the submission
-        if($submission->hasMedia()) {
-            foreach ($submission->getMedia() as $media) {
-                $media->delete();
-            }
-        }
-
         // remove any validation error messages from previous processing attempts:
         $submission->errors = null;
 
