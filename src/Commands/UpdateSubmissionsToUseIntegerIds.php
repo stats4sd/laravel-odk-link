@@ -30,5 +30,7 @@ class UpdateSubmissionsToUseIntegerIds extends Command
         Artisan::call('vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"');
         Artisan::call('migrate');
         Artisan::call('vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"');
+
+        return self::SUCCESS;
     }
 }
