@@ -1,0 +1,23 @@
+{
+  "name": "laravel-odk-link",
+  "version": "1.0.0",
+  "description": "[![Latest Version on Packagist](https://img.shields.io/packagist/v/stats4sd/laravel-odk-link.svg?style=flat-square)](https://packagist.org/packages/stats4sd/laravel-odk-link) [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/stats4sd/laravel-odk-link/run-tests?label=tests)](https://github.com/stats4sd/laravel-odk-link/actions?query=workflow%3Arun-tests+branch%3Amain) [![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/stats4sd/laravel-odk-link/Check%20&%20fix%20styling?label=code%20style)](https://github.com/stats4sd/laravel-odk-link/actions?query=workflow%3A\"Check+%26+fix+styling\"+branch%3Amain) [![Total Downloads](https://img.shields.io/packagist/dt/stats4sd/laravel-odk-link.svg?style=flat-square)](https://packagist.org/packages/stats4sd/laravel-odk-link)",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.3.4",
+    "vite": "^4.4.9"
+  },
+  "dependencies": {
+    "axios": "^1.5.0",
+    "laravel-vite-plugin": "^0.8.0",
+    "vue": "^3.3.4"
+  }
+}
