@@ -6,9 +6,10 @@
     </div>
 @else
     <div class="bd-callout border-success mb-4">
-        Based on your xls file, your form does not reference any fixed media files (e.g. images, videos or audio). If you know this is incorrect, for example if you reference media file names through variables in your form, you may still upload media files below.
+        Based on your xls file, your form does not reference any fixed media files (e.g. images, videos or audio). You do not need to do anything on this page.
     </div>
 @endif
+
 
     @foreach($xlsformTemplate->requiredFixedMedia as $requiredMedia)
 
