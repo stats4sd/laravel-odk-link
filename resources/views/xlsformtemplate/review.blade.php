@@ -77,5 +77,5 @@
 @endsection
 
 @section('after_scripts')
-    @vite('resources/assets/js/odk-link.js', 'vendor/stats4sd/laravel-odk-link')
+    @vite('resources/laravel-odk-link/js/odk-link.js')
 @endsection
