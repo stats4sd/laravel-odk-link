@@ -105,6 +105,11 @@ class OdkLinkServiceProvider extends PackageServiceProvider
                 ),], "{$this->package->shortName()}-migrations-v1-update-only");
         }
 
+        // publish front-end assets compiled with Vite
+        $this->publishes([
+            __DIR__ . '/../public/vendor/stats4sd/laravel-odk-link' => public_path('vendor/stats4sd/laravel-odk-link'),
+        ], 'assets');
+
         return parent::boot();
     }
 }

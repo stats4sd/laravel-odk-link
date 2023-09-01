@@ -16,7 +16,19 @@ class RequiredMediaController extends Controller
     // handle uploaded files
     public function update(RequiredMedia $requiredMedia)
     {
+        // delete any existing media
+        $requiredMedia->attachment()->disassociate();
 
+        $requiredMedia->getMedia()
+            ->each(fn($media) => $requiredMedia->deleteMedia($media));
+
+
+        $requiredMedia->addMediaFromRequest('uploaded_file')->toMediaLibrary();
+        $requiredMedia->attachment()->associate($requiredMedia->getFirstMedia());
+
+        $requiredMedia->refresh();
+
+        return ['required_media' => $requiredMedia];
     }
 
 }

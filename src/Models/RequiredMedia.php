@@ -18,6 +18,12 @@ class RequiredMedia extends Model implements HasMedia
     protected $table = 'required_media';
 
     protected $guarded = [];
+    protected $appends = ['has_media'];
+
+    public function getHasMediaAttribute(): bool
+    {
+        return $this->hasMedia();
+    }
 
     public function xlsformTemplate(): BelongsTo
     {
@@ -46,5 +52,7 @@ class RequiredMedia extends Model implements HasMedia
 
         return '';
     }
+
+
 
 }

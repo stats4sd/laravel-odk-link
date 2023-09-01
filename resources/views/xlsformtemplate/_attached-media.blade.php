@@ -11,8 +11,11 @@
 @endif
 
 
-    @foreach($xlsformTemplate->requiredFixedMedia as $requiredMedia)
+<div id="fixed-media-vue">
 
-        <livewire:odk-link::required-fixed-media-uploader :required-media="$requiredMedia"/>
+    @foreach($xlsformTemplate->requiredFixedMedia as $requiredMedia)
+        <h2>{{ $requiredMedia->name }}</h2>
+        <required-fixed-media-uploader :required-media-init="{{ $requiredMedia->toJson() }}"/>
 
     @endforeach
+</div>

@@ -35,7 +35,6 @@ class XlsformTemplateCrudController extends CrudController
     use ListOperation;
     use CreateOperation;
     use UpdateOperation;
-    use DropzoneOperation;
     use DeleteOperation;
 
     public function getCurrentEntry(): ?XlsformTemplate

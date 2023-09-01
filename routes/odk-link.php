@@ -1,6 +1,7 @@
 <?php
 
 // Admin panels from the ODK Link Package:
+use Stats4sd\OdkLink\Http\Controllers\RequiredMediaController;
 use Stats4sd\OdkLink\Http\Controllers\XlsformTemplateController;
 use Stats4sd\OdkLink\Models\Xlsform;
 use Stats4sd\OdkLink\Services\OdkLinkService;
@@ -43,4 +44,8 @@ Route::group([
     Route::post('xlsform/{xlsform}/update-xlsfile', [XlsformCrudController::class, 'updateXlsFileFromTemplate'])->name('xlsform.update-xlsfile');
     Route::post('xlsform/{xlsform}/archive', [XlsformCrudController::class, 'archiveForm'])->name('xlsform.archive');
     Route::post('xlsform/{xlsform}/get-submissions', [XlsformCrudController::class, 'getSubmissions'])->name('xlsform.get-submissions');
+
+
+    // Required Media handling
+    Route::post('required-media/{requiredMedia}', [RequiredMediaController::class, 'update']);
 });
