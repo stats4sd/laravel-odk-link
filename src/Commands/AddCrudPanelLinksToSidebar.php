@@ -12,22 +12,18 @@ class AddCrudPanelLinksToSidebar extends Command
     public $description = 'Adds links to the Backpack sidebar for: Xlsform Templates, Xlsforms, Xlsform Versions, Submissions';
 
     public function handle(): int
+
     {
-        $xlsTemplateLinkHtml = '<li class="nav-item"><a class="nav-link" href="{{ backpack_url("xlsform-template") }}"><i class="la la-toolbox nav-icon"></i> Xlsform Templates</a></li>';
 
-        $xlsFormLinkHtml = '<li class="nav-item"><a class="nav-link" href="{{ backpack_url("xlsform") }}"><i class="la la-wpforms nav-icon"></i> Xlsforms</a></li>';
+        $odkDropdownHtml = '<x-backpack::menu-dropdown title="ODK Forms" icon="la la-group">
+    <x-backpack::menu-dropdown-item title="Xlsform Templates" icon="la la-toolbox" :link="backpack_url(\\\'xlsform-template\\\')" />
+    <x-backpack::menu-dropdown-item title="Xlsforms" icon="la la-wpforms" :link="backpack_url(\\\'xlsform\\\')" />
+    <x-backpack::menu-dropdown-item title="Xlsform Owners" icon="la la-key" :link="backpack_url(\\\'odk-project\\\')" />
+    <x-backpack::menu-dropdown-item title=Submissions" icon="la la-clipboard-check" :link="backpack_url(\\\'submission\\\')" />
+</x-backpack::menu-dropdown>';
 
-        $odkProjectLinkHtml = '<li class="nav-item"><a class="nav-link" href="{{ backpack_url("odk-project") }}"><i class="la la-users nav-icon"></i> Xlsform Owners</a></li>';
 
-//        $xlsFormVersionLinkHtml = '<li class="nav-item"><a class="nav-link" href="{{ backpack_url("xlsform-version") }}"><i class="la la-forms nav-icon"></i> Xlsform Versions</a></li>';
-
-        $submissionLinkHtml = '<li class="nav-item"><a class="nav-link" href="{{ backpack_url("submission") }}"><i class="la la-clipboard-check nav-icon"></i> Submissions</a></li>';
-
-        Artisan::call("backpack:add-sidebar-content '$xlsTemplateLinkHtml'");
-        Artisan::call("backpack:add-sidebar-content '$xlsFormLinkHtml'");
-        Artisan::call("backpack:add-sidebar-content '$odkProjectLinkHtml'");
-//        Artisan::call("backpack:add-sidebar-content '$xlsFormVersionLinkHtml'");
-        Artisan::call("backpack:add-sidebar-content '$submissionLinkHtml'");
+        Artisan::call("backpack:add-menu-content '$odkDropdownHtml'");
 
         return self::SUCCESS;
     }

@@ -27,8 +27,8 @@
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-medialibrary": "^10.11",
         "spatie/laravel-package-tools": "^1.9.2",
-        "stats4sd/laravel-backpack-section-title": "^1.2",
-        "stats4sd/laravel-file-util": "dev-main"
+        "stats4sd/laravel-backpack-section-title": "*",
+        "stats4sd/laravel-file-util": "*"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

@@ -42,6 +42,11 @@ class OdkLinkServiceProvider extends PackageServiceProvider
                 '6_create_odk_projects_table',
                 '7_create_app_users_table',
                 '8_create_app_user_assignments_table',
+                '9_create_platforms_table',
+                '10_create_required_media_media_table',
+                '11_create_datasets_table',
+                '12_create_odk_datasets_table',
+                '13_create_odk_entities_table',
             ])
             ->hasCommands([
                 AddCrudPanelLinksToSidebar::class,

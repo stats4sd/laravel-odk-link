@@ -3,11 +3,9 @@
 namespace Stats4sd\OdkLink\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Artisan;
 
 use Illuminate\Support\Facades\Storage;
 use Stats4sd\OdkLink\Models\XlsformTemplate;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class AddDemoEntries extends Command
 {
@@ -17,18 +15,20 @@ class AddDemoEntries extends Command
 
     public function handle(): int
     {
-        $file = new UploadedFile(__DIR__ . '/../../tests/Files/ExampleOdk.xlsx', 'ExampleOdk.xlsx');
+        $file = file_get_contents(__DIR__ . '/../../tests/Files/ExampleOdk.xlsx');
+
+        if(Storage::disk(config('odk-link.storage.xlsforms'))->exists('ExampleOdk.xlsx')) {
+            Storage::disk(config('odk-link.storage.xlsforms'))->delete('ExampleOdk.xlsx');
+        }
 
         Storage::disk(config('odk-link.storage.xlsforms'))->put('ExampleOdk.xlsx', $file);
 
-        XlsformTemplate::factory()
-            ->create([
+        XlsformTemplate::create([
                 'title' => 'Demo ODK Form',
-                'xlsfile' => $file->getClientOriginalName(),
+                'xlsfile' => 'ExampleOdk.xlsx',
             ]);
 
 
         return self::SUCCESS;
     }
 }
-

@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->string('title');
             $table->string('xlsfile');
             $table->text('description')->nullable();
-            $table->foreignId('xlsform_subject_id')->nullable()->constrained('xlsform_subjects');
+            $table->foreignId('xlsform_subject_id')->nullable()->constrained('xlsform_subjects')->nullOnDelete()->cascadeOnUpdate();
             $table->text('selected_fields')->nullable()->comment('User seleced ODK variables.');
             $table->text('media')->nullable()->comment('links to stored files that should be added as media attachments to the ODK form whenever a version of this template is deployed');
             $table->json('csv_lookups')->nullable()->comment('information to enable mysql tables or views to be converted to csv files and added as additional media attachments to the ODK form');
@@ -29,6 +29,7 @@ return new class extends Migration {
             $table->json('schema')->nullable();
             $table->text('odk_error')->nullable()->comment('If a xlsfile upload results in an ODK syntax error, it will be stored here. For working forms, this will be null');
 
+            $table->timestamps();
             $table->softDeletes();
         });
     }

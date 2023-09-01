@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->foreignId('xlsform_template_id')->constrained('xlsform_templates');
             $table->string('name');
             $table->string('type');
-            $table->boolean('is_static')->default('true');
+            $table->boolean('is_static')->default(true);
             $table->boolean('exists_on_odk')->default(false);
             $table->timestamps();
         });
