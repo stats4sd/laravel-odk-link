@@ -175,6 +175,8 @@ class Xlsform extends Model implements WithXlsFormDrafts
         return $this->hasManyThrough(Submission::class, XlsformVersion::class);
     }
 
+
+
     public function updateXlsfileFromTemplate(): void
     {
         $filePath = 'xlsforms/' . $this->id . '/' . $this->xlsformTemplate->xlsfile;
@@ -234,5 +236,15 @@ class Xlsform extends Model implements WithXlsFormDrafts
     public function exportSubmissionData(): BinaryFileResponse
     {
         return Excel::download(new OdkSubmissionContentExport($this), 'test.xlsx');
+    }
+
+    public function attachedFixedMedia(): HasMany
+    {
+        return $this->xlsformTemplate->attachedFixedMedia();
+    }
+
+    public function attachedDataMedia(): HasMany
+    {
+        return $this->xlsformTemplate->attachedDataMedia();
     }
 }

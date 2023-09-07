@@ -54,6 +54,7 @@ Route::group([
     // Required Media handling
     Route::post('required-media/{requiredMedia}/file', [RequiredMediaController::class, 'updateMediaFile']);
     Route::post('required-media/{requiredMedia}/dataset', [RequiredMediaController::class, 'linkToDataset']);
+    Route::post('xlsform-template/{xlsformTemplate}/deploy-draft', [XlsformTemplateController::class, 'deployDraft']);
 
 
 });

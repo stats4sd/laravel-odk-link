@@ -15,6 +15,10 @@ interface WithXlsFormDrafts
 
     public function deployDraft(OdkLinkService $service): void;
 
-
     public function getOdkLink(): ?string;
+
+    // it must have media file attachments
+    public function attachedFixedMedia();
+
+    public function attachedDataMedia();
 }

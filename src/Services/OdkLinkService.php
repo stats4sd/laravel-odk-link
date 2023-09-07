@@ -18,6 +18,7 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Psr\SimpleCache\InvalidArgumentException;
 use SaintSystems\OData\ODataClient;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Stats4sd\OdkLink\Exports\SqlViewExport;
 use Stats4sd\OdkLink\Jobs\UpdateXlsformTitleInFile;
 use Stats4sd\OdkLink\Models\AppUser;
@@ -377,34 +378,39 @@ class OdkLinkService
 
     /**
      * Uploads all media files for an XLSform to ODK Central - both static files and dyncsv files
-     * @param Xlsform $xlsform
-     * @return bool $success
      * @throws RequestException
      */
-    public function uploadMediaFileAttachments(Xlsform $xlsform): bool
+    public function uploadMediaFileAttachments(WithXlsFormDrafts $xlsform): bool
     {
         // static files
-        $files = $xlsform->xlsformTemplate->media;
+        $requiredFixedMedia = $xlsform->attachedFixedMedia()->get();
 
-        if ($files && count($files) > 0) {
+        if ($requiredFixedMedia && count($requiredFixedMedia) > 0) {
 
-            foreach ($files as $file) {
-                $this->uploadSingleMediaFile($xlsform, $file);
+            foreach ($requiredFixedMedia as $requiredMediaItem) {
+                $media = $requiredMediaItem->getFirstMedia();
+                $this->uploadSingleMediaFile($xlsform, $media);
             }
 
         }
+
+
         // dynamic files
-        $csv_lookups = $xlsform->xlsformTemplate->csv_lookups;
+        $requiredDataMedia = $xlsform->attachedDataMedia()->get();
 
+        if($requiredDataMedia && count($requiredDataMedia)  > 0) {
+            foreach ($requiredDataMedia as $requiredMediaItem) {
 
-        if ($csv_lookups && count($csv_lookups) > 0) {
+                // if there is a static upload, use it;
+                $media = $requiredDataMedia->getFirstMedia();
+                if($media) {
+                    $this->uploadSingleMediaFile($xlsform, $media);
+                }
 
-            foreach ($csv_lookups as $lookup) {
+                else {
+                    // handle csv file generation...
 
-                $this->uploadSingleMediaFile(
-                    $xlsform,
-                    $this->createCsvLookupFile($xlsform, $lookup),
-                );
+                }
 
             }
         }
@@ -415,30 +421,30 @@ class OdkLinkService
 
     /**
      * Uploads a single media file to the given xlsform
-     * @param Xlsform $xlsform
-     * @param string $filePath
-     * @return array
      * @throws RequestException
      */
-    public function uploadSingleMediaFile(Xlsform $xlsform, string $filePath): array
+    public function uploadSingleMediaFile(WithXlsFormDrafts $xlsform, Media $media): array
     {
         $token = $this->authenticate();
-        $file = file_get_contents(Storage::disk(config('odk-link.storage.xlsforms'))->path($filePath));
 
-        $mimeType = mime_content_type(Storage::disk(config('odk-link.storage.xlsforms'))->path($filePath));
-        $fileName = collect(explode("/", $filePath))->last();
+        $mimeType = $media->getTypeFromMime();
+        $fileName = $media->file_name;
+        $fileStream = $media->stream();
 
         try {
 
             return Http::withToken($token)
                 ->contentType($mimeType)
-                ->withBody($file, $mimeType)
+                ->withBody($fileStream, $mimeType)
                 ->post("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}/draft/attachments/{$fileName}")
                 ->throw()
                 ->json();
         } catch (RequestException $exception) {
             if ($exception->getCode() === 404) {
                 abort(500, 'The file ' . $fileName . ' is not an expected file name for this ODK form template. Please review the form and check which media files are expected');
+            }
+            else {
+                throw($exception);
             }
         }
     }

@@ -16,6 +16,15 @@ class RequiredMediaController extends Controller
     // handle uploaded files
     public function updateMediaFile(RequiredMedia $requiredMedia): array
     {
+
+
+
+        $validated = request()->validate([
+            'uploaded_file' => 'file|required',
+            'is_static' => 'boolean|required',
+        ]);
+
+
         // un-link any existing dataset?
         $requiredMedia->dataset()->disassociate();
 
@@ -25,8 +34,8 @@ class RequiredMediaController extends Controller
 
         $requiredMedia->addMediaFromRequest('uploaded_file')->toMediaLibrary();
 
-        // if we're uploading a file, the required media is always static
-        $requiredMedia->is_static = true;
+        // check if the item is static from request
+        $requiredMedia->is_static = $validated['is_static'];
         $requiredMedia->save();
 
         $requiredMedia->refresh();
@@ -37,7 +46,7 @@ class RequiredMediaController extends Controller
     // link a required media to a dataset
     public function linkToDataset(RequiredMedia $requiredMedia): array
     {
-        request()->validate(['dataset_id' => 'required']);
+        request()->validate(['dataset_id' => 'required', 'is_static' => 'required|boolean']);
 
         $requiredMedia->dataset()->associate(request()->dataset_id);
         $requiredMedia->is_static = false;

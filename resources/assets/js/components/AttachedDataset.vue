@@ -1,6 +1,6 @@
 <template>
     <div class="card mb-2"
-         :class="requiredMedia.has_media ? 'border-success' : 'border-dark'"
+         :class="requiredMedia.dataset_id ? 'border-success' : 'border-dark'"
     >
         <div class="card-header d-flex justify-content-start align-items-center">
             <h3 class="mb-0 me-4">
@@ -15,23 +15,7 @@
         </div>
 
         <div class="card-body">
-            <div class="row" v-if="requiredMedia.is_static">
-                <div class="col-md-6 col-12">
-                    <div class="d-flex justify-content-center align-items-center mb-2">
-                        <label class="font-bold me-4">Uploaded file: </label>
-                        <a v-if="requiredMedia.has_media" :href="imageUrl">{{ requiredMedia.media[0].file_name }}</a>
-                        <span v-else> ~ no file uploaded ~ </span>
-                    </div>
-                    <i class="d-flex" v-if="requiredMedia.has_media">
-                        (uploaded on {{ new Date(requiredMedia.media[0].created_at).toDateString() }})
-                        <br/>
-                        You can replace this file by uploading another file.</i>
-                </div>
-                <div class="col-md-6 col-12 d-flex justify-content-center align-items-center">
-                    <DragAndDropSingleUploader :required-media="requiredMedia" @fileUploaded="saveFiles"/>
-                </div>
-            </div>
-            <div class="row" v-else>
+            <div class="row mb-4" v-if="!requiredMedia.is_static">
                 <div class="col-md-6 col-12">
                     <div class="alert alert-info show text-dark">Select the dataset to link to the form. Each team will use their own data for the form.</div>
                 </div>
@@ -48,6 +32,30 @@
                     <button class="btn btn-success" @click="saveDataset">Save</button>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-12" v-if="!requiredMedia.is_static">
+                    <hr/>
+                    <div class="alert alert-info text-dark">
+                        For testing, please upload an example csv file in the correct format. This csv file will also be used to inform teams what variables they need in their own dataset.
+                    </div>
+                </div>
+                <div class="col-md-6 col-12">
+
+                    <div class="d-flex justify-content-center align-items-center mb-2">
+                        <label class="font-bold me-4">Uploaded file: </label>
+                        <a v-if="requiredMedia.has_media" :href="imageUrl">{{ requiredMedia.media[0].file_name }}</a>
+                        <span v-else> ~ no file uploaded ~ </span>
+                    </div>
+                    <i class="d-flex" v-if="requiredMedia.has_media">
+                        (uploaded on {{ new Date(requiredMedia.media[0].created_at).toDateString() }})
+                        <br/>
+                        You can replace this file by uploading another file.</i>
+                </div>
+                <div class="col-md-6 col-12 d-flex justify-content-center align-items-center">
+                    <DragAndDropSingleUploader :required-media="requiredMedia" @fileUploaded="saveFiles"/>
+                </div>
+            </div>
+
 
         </div>
     </div>
@@ -92,13 +100,9 @@ onMounted(() => {
 
 function saveFiles(file) {
 
-    let formData = new FormData();
-    formData.append('uploaded_file', file);
-
-    axios.post('/admin/required-media/' + requiredMedia.value.id + '/file', formData, {
-        headers: {
-            'Content-Type': 'multipart/form-data',
-        },
+    axios.postForm('/admin/required-media/' + requiredMedia.value.id + '/file', {
+        uploaded_file: file,
+        is_static: requiredMedia.value.is_static ? 1 : 0 // convert to int as postForm cannot handle boolean
     })
         .then((res) => {
             console.log(res)
@@ -115,7 +119,8 @@ const imageUrl = computed(() => {
 
 function saveDataset() {
     axios.post('/admin/required-media/' + requiredMedia.value.id + '/dataset', {
-        dataset_id: requiredMedia.value.dataset_id
+        dataset_id: requiredMedia.value.dataset_id,
+        is_static: requiredMedia.value.is_static,
     }).then((res) => {
 
         new Noty({
