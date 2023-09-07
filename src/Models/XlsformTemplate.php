@@ -41,8 +41,8 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
 
     protected static function booted()
     {
-        // on creating, push the new form to ODK Central
-        static::created(function (XlsformTemplate $xlsformTemplate) {
+        // on creating or updating, push the new form to ODK Central
+        static::saved(function (XlsformTemplate $xlsformTemplate) {
             $odkLinkService = app()->make(OdkLinkService::class);
             $xlsformTemplate->owner()->associate(Platform::first());
 
@@ -259,14 +259,14 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
     {
         return $this->hasMany(RequiredMedia::class)
             ->where('required_media.type', '!=', 'file')
-            ->where('required_media.attachment_id', '!=', null);
+            ->whereHas('media');
     }
 
     public function attachedDataMedia(): HasMany
     {
         return $this->hasMany(RequiredMedia::class)
             ->where('required_media.type', '=', 'file')
-            ->where('required_media.attachment_id', '!=', null);
+            ->where('required_media.dataset_id', '!=', null);
     }
 
     public function getRequiredMedia(OdkLinkService $odkLinkService): void

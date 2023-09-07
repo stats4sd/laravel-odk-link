@@ -3,6 +3,7 @@
 
 namespace Stats4sd\OdkLink\Models;
 
+use Backpack\CRUD\app\Models\Traits\CrudTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,10 @@ use Stats4sd\OdkLink\Traits\HasXlsforms;
  */
 class DatasetVariable extends Model
 {
+
+    use CrudTrait;
+
+
     protected $table = 'dataset_variables';
     protected $guarded = [];
 

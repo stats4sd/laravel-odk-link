@@ -1,6 +1,8 @@
 <?php
 
 // Admin panels from the ODK Link Package:
+use Stats4sd\OdkLink\Http\Controllers\Admin\DatasetCrudController;
+use Stats4sd\OdkLink\Http\Controllers\DatasetController;
 use Stats4sd\OdkLink\Http\Controllers\RequiredMediaController;
 use Stats4sd\OdkLink\Http\Controllers\XlsformTemplateController;
 use Stats4sd\OdkLink\Models\Xlsform;
@@ -35,6 +37,9 @@ Route::group([
     Route::crud('odk-project', OdkProjectCrudController::class);
     Route::crud('submission', SubmissionCrudController::class);
 
+    Route::crud('dataset', DatasetCrudController::class);
+    Route::get('datasets', [DatasetController::class, 'index']);
+
 
     Route::post('submission/{submission}/reprocess', [SubmissionCrudController::class, 'reprocess'])->name('submission.reprocess');
 
@@ -47,5 +52,8 @@ Route::group([
 
 
     // Required Media handling
-    Route::post('required-media/{requiredMedia}', [RequiredMediaController::class, 'update']);
+    Route::post('required-media/{requiredMedia}/file', [RequiredMediaController::class, 'updateMediaFile']);
+    Route::post('required-media/{requiredMedia}/dataset', [RequiredMediaController::class, 'linkToDataset']);
+
+
 });

@@ -160,16 +160,21 @@ class XlsformTemplateCrudController extends CrudController
      */
     protected function setupCreateOperation(): void
     {
-        // only "save and edit" should be available
-        CRUD::removeSaveActions(['save_and_edit', 'save_and_show', 'save_and_new', 'save_and_preview']);
+        CRUD::removeAllSaveActions();
+        CRUD::addSaveAction([
+            'name' => 'save',
+            'redirect' => function($crud, $request, $itemId) {
+                return backpack_url('xlsform-template/' . $itemId . '/review');
+            },
+            'button_text' => 'Save & Review',
+        ]);
 
         CRUD::field('create_header')
             ->type('section-title')
             ->title('Step 1: Upload XLSForm File')
-            ->content('In this first step, please upload the XLSform file. The file will be sent to ODK Central for checking. After saving, you will be able to:<ul>
-                <li>Review any ODK errors that were found in the form (TODO)</li>
-                <li>Add required media files, or link the form to database tables if you want csv files that automatically update and/or that contain owner-specific data</li>
-                <li>Automatically publish the form to all platform users, or only to specific users. (TODO)</li>
+            ->content('Below, please upload the XLSform file. The file will be sent to ODK Central for checking. After saving:<ul>
+                <li>If there are ODK form errors, you will see them here. Please check the XLSform file and re-upload.</li>
+                <li>If there are no errors, you will be taken back to the review page, where you can add any required media files, datasets and preview the form.</li>
                 </ul>
             ')
             ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
@@ -194,10 +199,6 @@ class XlsformTemplateCrudController extends CrudController
             ->type('textarea')
             ->validationRules('nullable');
 
-        CRUD::field('create_footer')
-            ->type('section-title')
-            ->content('When you save, the XLSform file will be uploaded to ODK Central for checking. On the next page, you will see the feedback of this checking.')
-            ->view_namespace('stats4sd.laravel-backpack-section-title::fields');
     }
 
     public function setupUpdateOperation(): void

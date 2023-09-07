@@ -14,17 +14,34 @@ class RequiredMediaController extends Controller
 
 
     // handle uploaded files
-    public function update(RequiredMedia $requiredMedia)
+    public function updateMediaFile(RequiredMedia $requiredMedia): array
     {
-        // delete any existing media
-        $requiredMedia->attachment()->disassociate();
+        // un-link any existing dataset?
+        $requiredMedia->dataset()->disassociate();
 
         $requiredMedia->getMedia()
             ->each(fn($media) => $requiredMedia->deleteMedia($media));
 
 
         $requiredMedia->addMediaFromRequest('uploaded_file')->toMediaLibrary();
-        $requiredMedia->attachment()->associate($requiredMedia->getFirstMedia());
+
+        // if we're uploading a file, the required media is always static
+        $requiredMedia->is_static = true;
+        $requiredMedia->save();
+
+        $requiredMedia->refresh();
+
+        return ['required_media' => $requiredMedia];
+    }
+
+    // link a required media to a dataset
+    public function linkToDataset(RequiredMedia $requiredMedia): array
+    {
+        request()->validate(['dataset_id' => 'required']);
+
+        $requiredMedia->dataset()->associate(request()->dataset_id);
+        $requiredMedia->is_static = false;
+        $requiredMedia->save();
 
         $requiredMedia->refresh();
 

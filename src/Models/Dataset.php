@@ -3,6 +3,7 @@
 
 namespace Stats4sd\OdkLink\Models;
 
+use Backpack\CRUD\app\Models\Traits\CrudTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,14 +17,14 @@ use Stats4sd\OdkLink\Traits\HasXlsforms;
  */
 class Dataset extends Model
 {
-    use HasXlsforms;
+    use HasXlsforms, CrudTrait;
 
     protected $table = 'datasets';
     protected $guarded = [];
 
-    public function requiredMedia(): MorphMany
+    public function requiredMedia(): HasMany
     {
-        return $this->morphMany(RequiredMedia::class, 'attachment');
+        return $this->hasMany(RequiredMedia::class);
     }
 
     public function odkDatasets(): HasMany
@@ -31,12 +32,15 @@ class Dataset extends Model
         return $this->hasMany(OdkDataset::class);
     }
 
+
+    // explicitly defined variables that can be brought into ODK form csv files.
     public function variables(): HasMany
     {
         return $this->hasMany(DatasetVariable::class);
     }
 
-    public function datasets(): BelongsToMany
+
+    public function xlsformTemplates(): BelongsToMany
     {
         return $this->belongsToMany(XlsformTemplate::class)
             ->withPivot([

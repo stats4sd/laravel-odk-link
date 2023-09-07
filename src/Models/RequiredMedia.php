@@ -20,6 +20,11 @@ class RequiredMedia extends Model implements HasMedia
     protected $guarded = [];
     protected $appends = ['has_media'];
 
+    protected $casts = [
+        'is_static' => 'boolean',
+    ];
+
+
     public function getHasMediaAttribute(): bool
     {
         return $this->hasMedia();
@@ -30,9 +35,9 @@ class RequiredMedia extends Model implements HasMedia
         return $this->belongsTo(XlsformTemplate::class);
     }
 
-    public function attachment(): MorphTo
+    public function dataset(): BelongsTo
     {
-        return $this->morphTo();
+        return $this->belongsTo(Dataset::class);
     }
 
     public function getDatasetAttribute()

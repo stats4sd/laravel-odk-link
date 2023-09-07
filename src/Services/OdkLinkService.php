@@ -159,7 +159,7 @@ class OdkLinkService
      * If the form is not already deployed, it will create a new form instance on ODK Central.
      * If the form is already deployed, it will push the current XLSfile as a new draft to the existing form.
      * @param Xlsform $xlsform
-     * @return array $xlsformDetails
+     * @return array|null $xlsformDetails
      * @throws RequestException
      */
     public function createDraftForm(WithXlsFormDrafts $xlsform): ?array
@@ -205,7 +205,7 @@ class OdkLinkService
             ->throw()
             ->json();
 
-        $xlsform->update(['schema' => $schema]);
+        $xlsform->updateQuietly(['schema' => $schema]);
 
 
         return $this->getDraftFormDetails($xlsform);
