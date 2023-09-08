@@ -40,6 +40,7 @@ function saveFiles(file) {
 
     let formData = new FormData();
     formData.append('uploaded_file', file);
+    formData.append('is_static', requiredMedia.is_static ? 1 : 0 )
 
     axios.post('/admin/required-media/'+requiredMedia.value.id+'/file', formData, {
         headers: {

@@ -10,10 +10,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Stats4sd\OdkLink\Http\Controllers\Admin\Operations\ReviewOperation;
 use Stats4sd\OdkLink\Imports\XlsformImport;
 use Stats4sd\OdkLink\Models\RequiredMedia;
+use Stats4sd\OdkLink\Models\Xlsform;
 use Stats4sd\OdkLink\Models\XlsformSubject;
 use Stats4sd\OdkLink\Models\XlsformTemplate;
 use Backpack\CRUD\app\Library\CrudPanel\CrudPanel;
@@ -64,6 +66,8 @@ class XlsformTemplateCrudController extends CrudController
     protected function setupListOperation(): void
     {
         $owners = Str::plural(config('odk-link.owners.main_type'));
+
+        CRUD::setResponsiveTable(false);
 
         Widget::add()
             ->type('card')
@@ -121,6 +125,13 @@ class XlsformTemplateCrudController extends CrudController
                 return "{$entry->attachedDataMedia()->count()} / {$entry->requiredDataMedia()->count()}";
             });
 
+        CRUD::column('primary_dataset')
+            ->type('closure')
+            ->label('Main dataset')
+            ->function(function(XlsformTemplate $entry) {
+                return $entry->primary_dataset ? $entry->primary_dataset->name : '-';
+            });
+
 
         CRUD::column('available')->type('custom_html')->label('Form Status')
             ->value(function (XlsformTemplate $entry) {
@@ -131,24 +142,15 @@ class XlsformTemplateCrudController extends CrudController
                 return $entry->available ? "Available" : "Pending";
             });
 
-//        CRUD::filter('xlsform_subject_id')
-//            ->type('select2')
-//            ->label('Filter by Xlsform subject')
-//            ->options(function () {
-//                return XlsformSubject::get()->pluck('name', 'id')->toArray();
-//            })
-//            ->whenActive(function ($value) {
-//                $this->crud->addClause('where', 'xlsform_subject_id', $value);
-//            });
-
-//        // add the "Select" button for "Select ODK Variables"
-//        Crud::button('select')
-//            ->stack('line')
-//            ->view('odk-link::buttons.select');
-
         CRUD::button('review')
             ->stack('line')
-            ->view('odk-link::buttons.xlsformtemplate.review');
+            ->view('odk-link::buttons.xlsformtemplate.review')
+            ->before('delete');
+
+        CRUD::button('publish')
+            ->stack('line')
+            ->view('odk-link::buttons.xlsformtemplate.publish')
+            ->before('delete');
 
     }
 
@@ -163,7 +165,7 @@ class XlsformTemplateCrudController extends CrudController
         CRUD::removeAllSaveActions();
         CRUD::addSaveAction([
             'name' => 'save',
-            'redirect' => function($crud, $request, $itemId) {
+            'redirect' => function ($crud, $request, $itemId) {
                 return backpack_url('xlsform-template/' . $itemId . '/review');
             },
             'button_text' => 'Save & Review',
@@ -198,6 +200,8 @@ class XlsformTemplateCrudController extends CrudController
         CRUD::field('description')
             ->type('textarea')
             ->validationRules('nullable');
+
+        // add a field to select the main dataset
 
     }
 

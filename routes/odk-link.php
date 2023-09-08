@@ -25,7 +25,7 @@ Route::group([
 
     Route::crud('xlsform-template', XlsformTemplateCrudController::class);
     Route::get('xlsform-template/{xlsformTemplate}/review', [XlsformTemplateController::class, 'review']);
-
+    Route::get('xlsform-template/{xlsformTemplate}/publish', [XlsformTemplateController::class, 'publish']);
 
     // Add a new route for XlSForm Template CRUD list view "Select" button
     Route::get('xlsform-template/{id}/select', [XlsformTemplateCrudController::class, 'select']);

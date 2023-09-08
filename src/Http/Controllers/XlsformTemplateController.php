@@ -6,6 +6,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller;
 use Illuminate\View\View;
+use Prologue\Alerts\Facades\Alert;
 use Stats4sd\OdkLink\Models\XlsformTemplate;
 use Stats4sd\OdkLink\Services\OdkLinkService;
 
@@ -35,6 +36,18 @@ class XlsformTemplateController extends Controller
         return view('odk-link::xlsformtemplate.review', [
             'xlsformTemplate' => $xlsformTemplate,
         ]);
+    }
+
+    // make the form available to platform users
+    public function publish(XlsformTemplate $xlsformTemplate)
+    {
+        $xlsformTemplate->update([
+            'available' => true,
+        ]);
+
+        Alert::add('success', 'Form published successfully')->flash();
+
+        return redirect()->back();
     }
 
 }

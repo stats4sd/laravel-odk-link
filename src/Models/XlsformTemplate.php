@@ -301,6 +301,12 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
         return $this->schema->filter(fn($item) => $item['type'] !== 'structure' && $item['path'] === "/{$item['name']}");
     }
 
+    public function getPrimaryDatasetAttribute()
+    {
+        return $this->datasets()->wherePivot('is_root', 1)->first();
+
+    }
+
     public function datasets(): BelongsToMany
     {
         return $this->belongsToMany(Dataset::class)
