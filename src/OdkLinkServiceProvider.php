@@ -11,6 +11,7 @@ use Stats4sd\OdkLink\Commands\AddDemoEntries;
 use Stats4sd\OdkLink\Commands\CreateMissingOdkProjects;
 use Stats4sd\OdkLink\Commands\CreatePlatformTestProject;
 use Stats4sd\OdkLink\Commands\GenerateSubmissionRecords;
+use Stats4sd\OdkLink\Commands\RemovePackageMigration;
 use Stats4sd\OdkLink\Commands\UpdateSubmissionsToUseIntegerIds;
 use Stats4sd\OdkLink\Livewire\DatasetVariable;
 use Stats4sd\OdkLink\Livewire\FormStructure;
@@ -43,8 +44,8 @@ class OdkLinkServiceProvider extends PackageServiceProvider
                 '7_create_app_users_table',
                 '8_create_app_user_assignments_table',
                 '9_create_platforms_table',
-                '10_create_required_media_media_table',
-                '11_create_datasets_table',
+                '10_create_datasets_table',
+                '11_create_required_media_media_table',
                 '12_create_odk_datasets_table',
                 '13_create_odk_entities_table',
             ])
@@ -55,6 +56,7 @@ class OdkLinkServiceProvider extends PackageServiceProvider
                 CreateMissingOdkProjects::class,
                 UpdateSubmissionsToUseIntegerIds::class,
                 CreatePlatformTestProject::class,
+                RemovePackageMigration::class,
             ]);
 
     }

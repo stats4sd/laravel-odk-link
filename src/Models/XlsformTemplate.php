@@ -53,7 +53,6 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
 
             $xlsformTemplate->deployDraft($odkLinkService);
             $xlsformTemplate->getRequiredMedia($odkLinkService);
-            $xlsformTemplate->saveQuietly();
         });
     }
 
@@ -280,7 +279,9 @@ class XlsformTemplate extends Model implements HasMedia, WithXlsFormDrafts
                 'type' => $mediaItem['type'],
                 'exists_on_odk' => $mediaItem['exists'],
             ]);
+
         }
+
     }
 
 

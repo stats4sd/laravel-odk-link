@@ -11,6 +11,7 @@ use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
+use Prologue\Alerts\Facades\Alert;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Stats4sd\OdkLink\Http\Controllers\Admin\Operations\ReviewOperation;
 use Stats4sd\OdkLink\Imports\XlsformImport;
@@ -255,6 +256,40 @@ class XlsformTemplateCrudController extends CrudController
 
         // divert to CRUD panel list view
         return redirect('/admin/xlsform-template');
+    }
+
+    // override the destroy function to delete the xlsform file from storage
+    public function destroy($id)
+    {
+
+        $entry = XlsformTemplate::find($id);
+
+        // if the template is available, prevent deletion
+        if ($entry->available) {
+
+            Alert::add('danger', 'This form is available to users and cannot be deleted from the platform. Please archive it instead to prevent further submissions.')->flash();
+
+            return redirect()->back();
+        }
+
+        // delete the xlsform file from storage
+        Storage::disk(config('odk-link.storage.xlsforms'))->delete($entry->xlsfile);
+
+        // delete the entry from the database
+        return parent::destroy($id);
+    }
+
+    public function archive(XlsformTemplate $xlsformTemplate)
+    {
+        // make the form unavailable to teams
+        $xlsformTemplate->update([
+            'available' => false,
+        ]);
+
+        Alert::add('success', 'Form archived successfully')->flash();
+
+        return redirect()->back();
+
     }
 
 }

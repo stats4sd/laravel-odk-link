@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('required_media', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dataset_id')->nullable()->constrained('datasets');
-            $table->foreignId('xlsform_template_id')->constrained('xlsform_templates');
+            $table->foreignId('xlsform_template_id')->constrained('xlsform_templates')->cascadeOnDelete()->cascadeOnUpdate();
             $table->string('name');
             $table->string('type');
             $table->boolean('is_static')->default(true);

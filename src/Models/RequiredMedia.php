@@ -24,6 +24,23 @@ class RequiredMedia extends Model implements HasMedia
         'is_static' => 'boolean',
     ];
 
+    protected static function booted()
+    {
+        static::deleting(function (RequiredMedia $requiredMedia) {
+            $requiredMedia->getMedia()
+                ->each(fn($media) => $requiredMedia->deleteMedia($media));
+        });
+
+        static::saved(function(RequiredMedia $requiredMedia) {
+
+            // update related xlsform template to set draft_needs_updating to true
+            $requiredMedia->xlsformTemplate->updateQuietly(
+                ['draft_needs_updating' => true,]
+            );
+
+        });
+    }
+
 
     public function getHasMediaAttribute(): bool
     {

@@ -196,7 +196,7 @@ class OdkLinkService
 
         // when creating a new draft for an existing form, the full form details are not returned. In this case, the $xlsform record can remain unchanged
         if (isset($response['xmlFormId'])) {
-            $xlsform->update(['odk_id' => $response['xmlFormId']]);
+            $xlsform->updateQuietly(['odk_id' => $response['xmlFormId']]);
         }
 
 
@@ -231,6 +231,7 @@ class OdkLinkService
     public function getRequiredMedia(XlsformTemplate $xlsformTemplate): array
     {
         $token = $this->authenticate();
+
 
         return Http::withToken($token)
             ->get("{$this->endpoint}/projects/{$xlsformTemplate->owner->odkProject->id}/forms/{$xlsformTemplate->odk_id}/attachments")

@@ -33,6 +33,10 @@ class XlsformTemplateController extends Controller
         $odkLinkService = app()->make(OdkLinkService::class);
         $xlsformTemplate->deployDraft($odkLinkService);
 
+        $xlsformTemplate->draft_needs_updating = false;
+        $xlsformTemplate->save();
+
+
         return view('odk-link::xlsformtemplate.review', [
             'xlsformTemplate' => $xlsformTemplate,
         ]);

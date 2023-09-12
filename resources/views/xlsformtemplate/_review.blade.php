@@ -1,13 +1,15 @@
 <h2>Review your form</h2>
 
 <h3>Update Media</h3>
-If you have updated your media files, you should update the current draft to ensure that the latest media files are available in the preview below.
+@if($xlsformTemplate->draft_needs_updating)
 
-<form action="{{ backpack_url("xlsform-template/$xlsformTemplate->id/deploy-draft") }}" method="POST">
-    @csrf
-    <button type="submit" class="btn btn-primary mt-3">Update Draft</button>
-</form>
+    <p>There are media files that need to be uploaded to ODK Central. Please click the button below to upload them and update the draft.</p>
+    <form action="{{ backpack_url("xlsform-template/$xlsformTemplate->id/deploy-draft") }}" method="POST">
+        @csrf
+        <button type="submit" class="btn btn-primary mt-3">Update Draft</button>
+    </form>
 
+@endif
 <h3 class="mt-4">DRAFT FORM TESTING</h3>
 <p>Your XLSform file has been uploaded to ODK Central. You can review the draft using ODK Collect or Enketo. We recommend previewing the form with the same tool that will be used for data collection, because Enketo and ODK Collect render the same form in quite different ways.</p>
 
@@ -16,7 +18,8 @@ If you have updated your media files, you should update the current draft to ens
 
 <h3>Preview in ODK Collect</h3>
 
-<p>In ODK Collect, go to 'add new project' and then scan the QR code below. THis will create a new project with <b>only</b> this form. Once you have finished testing the form, you can delete that entire project from ODK Collect to keep your project list tidy.
+<p>In ODK Collect, go to 'add new project' and then scan the QR code below. THis will create a new project with
+    <b>only</b> this form. Once you have finished testing the form, you can delete that entire project from ODK Collect to keep your project list tidy.
 
 <div class='my-4 mx-3 d-flex justify-content-start'>
     {{ QrCode::size(200)->generate($xlsformTemplate->draft_qr_code_string) }}
