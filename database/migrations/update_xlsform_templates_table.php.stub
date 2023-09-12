@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        /**
-         * Table to store all ODK raw submissions that get pulled from ODK Central
-         */
         Schema::table('xlsform_templates', function (Blueprint $table) {
 
             // odk draft details

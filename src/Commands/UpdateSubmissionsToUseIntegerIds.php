@@ -25,11 +25,16 @@ class UpdateSubmissionsToUseIntegerIds extends Command
         // add specific submission update migration
        Artisan::call("vendor:publish --tag=odk-link-migrations-v1-update-only");
 
+       $this->info('published v1 update migrations');
 
         // setup Spatie Media Library
         Artisan::call('vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"');
+
+        $this->info('published Spatie Media Library migrations');
         Artisan::call('migrate');
         Artisan::call('vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"');
+
+        $this->info('published Spatie Media Library config');
 
         return self::SUCCESS;
     }

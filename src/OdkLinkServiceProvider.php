@@ -8,6 +8,7 @@ use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Stats4sd\OdkLink\Commands\AddCrudPanelLinksToSidebar;
 use Stats4sd\OdkLink\Commands\AddDemoEntries;
+use Stats4sd\OdkLink\Commands\AddSingleMigrationFile;
 use Stats4sd\OdkLink\Commands\CreateMissingOdkProjects;
 use Stats4sd\OdkLink\Commands\CreatePlatformTestProject;
 use Stats4sd\OdkLink\Commands\GenerateSubmissionRecords;
