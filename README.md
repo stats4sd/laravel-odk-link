@@ -39,6 +39,16 @@ This package comes with a set of CRUD panels designed to help you manage ODK for
 php artisan odk:crud
 ```
 
+
+This package uses Spatie's Laravel Media Library. To set that up, run the following commands (see their [Installation instructions](https://spatie.be/docs/laravel-medialibrary/v10/installation-setup) for more information and for custom setups)
+
+```bash
+php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="migrations"
+php artisan migrate
+php artisan vendor:publish --provider="Spatie\MediaLibrary\MediaLibraryServiceProvider" --tag="config"
+```
+
+
 You also need to add some Environment variables to your project. In your .env file, add the following:
 
 ```dotenv

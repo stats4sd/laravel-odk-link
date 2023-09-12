@@ -105,12 +105,12 @@ class SubmissionCrudController extends CrudController
                     $content = $entry->content;
                 }
 
-                return $this->createContentTable($content);
+                return $this->createContentTable($content, $entry);
             }
         );
     }
 
-    public function createContentTable($array)
+    public function createContentTable($array, $entry)
     {
         $output = '
             <table class="table table-striped">
@@ -125,7 +125,16 @@ class SubmissionCrudController extends CrudController
                 if ($key === "__system" || $key === "meta") {
                     $value = json_encode($value);
                 } else {
-                    $value = $this->createContentTable($value);
+                    $value = $this->createContentTable($value, $entry);
+                }
+            }
+
+
+            // replace any media item file name with a link to the item.
+            foreach($entry->getMedia() as $mediaItem) {
+                if($value === $mediaItem->file_name) {
+                    $value = "<a href='{$mediaItem->getUrl()}'>{$mediaItem->file_name}</a>";
+                    break;
                 }
             }
 
