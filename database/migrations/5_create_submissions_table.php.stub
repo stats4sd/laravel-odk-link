@@ -11,7 +11,8 @@ return new class extends Migration {
          * Table to store all ODK raw submissions that get pulled from ODK Central
          */
         Schema::create('submissions', function (Blueprint $table) {
-            $table->string('id')->primary();
+            $table->id();
+            $table->string('odk_id')->unique();
             $table->foreignId('xlsform_version_id')->constrained('xlsform_versions');
             $table->timestamp('submitted_at');
             $table->string('submitted_by')->nullable();

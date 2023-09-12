@@ -2,6 +2,7 @@
 
 namespace Stats4sd\OdkLink;
 
+use Carbon\Carbon;
 use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -9,6 +10,7 @@ use Stats4sd\OdkLink\Commands\AddCrudPanelLinksToSidebar;
 use Stats4sd\OdkLink\Commands\AddDemoEntries;
 use Stats4sd\OdkLink\Commands\CreateMissingOdkProjects;
 use Stats4sd\OdkLink\Commands\GenerateSubmissionRecords;
+use Stats4sd\OdkLink\Commands\UpdateSubmissionsToUseIntegerIds;
 use Stats4sd\OdkLink\Services\OdkLinkService;
 
 class OdkLinkServiceProvider extends PackageServiceProvider
@@ -40,6 +42,7 @@ class OdkLinkServiceProvider extends PackageServiceProvider
                 AddDemoEntries::class,
                 GenerateSubmissionRecords::class,
                 CreateMissingOdkProjects::class,
+                UpdateSubmissionsToUseIntegerIds::class,
             ]);
 
     }
@@ -61,15 +64,24 @@ class OdkLinkServiceProvider extends PackageServiceProvider
     {
         //handle routes manually, as we want to let the user override the package routes in the main app:
         $this->publishes([
-            __DIR__.'/../routes/odk-link.php' => base_path('routes/backpack/odk-link.php')
+            __DIR__ . '/../routes/odk-link.php' => base_path('routes/backpack/odk-link.php')
         ], 'odk-link-routes');
 
         // if the user has published the routes file, do not register the package routes.
-        if(file_exists(base_path('routes/backpack/odk-link.php'))) {
+        if (file_exists(base_path('routes/backpack/odk-link.php'))) {
             $this->loadRoutesFrom(base_path('routes/backpack/odk-link.php'));
         } else {
-            $this->loadRoutesFrom(__DIR__.'/../routes/odk-link.php');
+            $this->loadRoutesFrom(__DIR__ . '/../routes/odk-link.php');
         }
+
+        // publish optional upgrade-migrations on separate tag
+        $updateFileName = $this->package->basePath("/../database/migrations/update_submissions_table.php.stub");
+
+        $this->publishes([
+            $updateFileName => $this->generateMigrationName(
+                'update_submissions_table.php',
+                Carbon::now()->addSecond()
+            ),], "{$this->package->shortName()}-migrations-v1-update-only");
 
         return parent::boot();
     }
