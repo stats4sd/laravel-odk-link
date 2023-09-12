@@ -206,7 +206,7 @@ class XlsformTemplateCrudController extends CrudController
 
     }
 
-    public function setupUpdateOperation(): void
+    protected function setupUpdateOperation(): void
     {
         $this->setupCreateOperation();
     }
