@@ -21,7 +21,7 @@
         "ext-zlib": "*",
         "backpack/crud": "^5.2|^6.1.0",
         "backpack/pro": "^1.2|^2.0",
-        "livewire/livewire": "^2.10",
+        "livewire/livewire": "^2.10|^3.0",
         "maatwebsite/excel": "^3.1.4",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "spatie/laravel-medialibrary": "^10.11",
