@@ -332,7 +332,7 @@ class OdkLinkService
 
         $result = Http::withToken($token)
             ->patch("{$this->endpoint}/projects/{$xlsform->owner->odkProject->id}/forms/{$xlsform->odk_id}", [
-                'state' => 'closed',
+                'state' => 'closing',
             ])
             ->throw()
             ->json();
