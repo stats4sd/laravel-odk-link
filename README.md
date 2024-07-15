@@ -1,3 +1,7 @@
+>[!NOTE] This Project is Archived!
+>
+> The newer version of this system is [the Filament-based package](https://github.com/stats4sd/filament-odk-link)
+
 # Laravel ODK Link 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/stats4sd/laravel-odk-link.svg?style=flat-square)](https://packagist.org/packages/stats4sd/laravel-odk-link)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/stats4sd/laravel-odk-link/run-tests?label=tests)](https://github.com/stats4sd/laravel-odk-link/actions?query=workflow%3Arun-tests+branch%3Amain)
